@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="KitchenPulse.Api/KitchenPulse.Api.csproj" />
+  <Project Path="KitchenPulse.Application/KitchenPulse.Application.csproj" />
+  <Project Path="KitchenPulse.Domain.Tests/KitchenPulse.Domain.Tests.csproj" />
+  <Project Path="KitchenPulse.Domain/KitchenPulse.Domain.csproj" />
+  <Project Path="KitchenPulse.Infrastructure/KitchenPulse.Infrastructure.csproj" />
+</Solution>

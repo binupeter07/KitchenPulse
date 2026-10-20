@@ -1,11 +1,21 @@
-﻿namespace KitchenPulse.Domain.Entities;
+﻿using KitchenPulse.Domain.Enums;
+
+namespace KitchenPulse.Domain.Entities;
 
 public class Dish
 {
+    private readonly List<RecipeLine> _recipeLines = new();
+
+
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public string Description { get; private set; }
     public decimal Price { get; private set; }
+    public IReadOnlyCollection<RecipeLine> RecipeLines => _recipeLines;
+    public IReadOnlyCollection<Allergen> Allergens => _recipeLines
+        .SelectMany(rl => rl.Ingredient.Allergens)
+        .Distinct()
+        .ToList();
 
     public Dish(string name, string? description, decimal price)
     {
@@ -16,6 +26,19 @@ public class Dish
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
         Price = price;
+    }
+
+
+    public void AddIngredient(Ingredient ingredient, decimal quantity)
+    {
+        ArgumentNullException.ThrowIfNull(ingredient);
+
+        if (_recipeLines.Any(rl => rl.Ingredient.Id == ingredient.Id))
+        {
+            throw new InvalidOperationException($"Ingredient '{ingredient.Name}' is already added to the dish.");
+        }
+        var recipeLine = new RecipeLine(ingredient, quantity);
+        _recipeLines.Add(recipeLine);
     }
 
     private static void ValidateName(string name)

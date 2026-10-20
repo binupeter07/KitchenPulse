@@ -4,9 +4,7 @@ namespace KitchenPulse.Domain.Entities;
 
 public class Ingredient
 {
-
     private readonly List<Allergen> _allergens = new();
-
 
     public Guid Id { get; private set; }
     public string Name { get; private set; }
@@ -14,20 +12,14 @@ public class Ingredient
     public StorageType StorageType { get; private set; }
     public IReadOnlyCollection<Allergen> Allergens => _allergens;
 
-
     public Ingredient(string name, StockUnit unit, StorageType storageType)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentException("Ingredient name cannot be null or blank.", nameof(name));
-        }
+        ValidateName(name);
         Id = Guid.NewGuid();
         Name = name.Trim();
         Unit = unit;
         StorageType = storageType;
     }
-
-
 
     public void AddAllergen(Allergen allergen)
     {
@@ -50,5 +42,19 @@ public class Ingredient
 
     }
 
+    public void Rename(string newName)
+    {
+        ValidateName(newName);
+
+        Name = newName.Trim();
+    }
+
+    private static void ValidateName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Ingredient name cannot be null or blank.", nameof(name));
+        }
+    }
 
 }

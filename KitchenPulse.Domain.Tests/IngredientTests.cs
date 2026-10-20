@@ -64,10 +64,10 @@ public class IngredientTests
     {
         var ingredient = new Ingredient("Peanut Butter", StockUnit.Gram, StorageType.Ambient);
 
-        ingredient.AddAllergen(Allergen.TreeNuts);
-        ingredient.RemoveAllergen(Allergen.TreeNuts);
+        ingredient.AddAllergen(Allergen.Peanuts);
+        ingredient.RemoveAllergen(Allergen.Peanuts);
 
-        Assert.DoesNotContain(Allergen.TreeNuts, ingredient.Allergens);
+        Assert.DoesNotContain(Allergen.Peanuts, ingredient.Allergens);
     }
 
     [Fact]
@@ -96,10 +96,10 @@ public class IngredientTests
     {
         var ingredient = new Ingredient("Mixed Nuts", StockUnit.Gram, StorageType.Ambient);
 
-        ingredient.AddAllergen(Allergen.Nuts);
+        ingredient.AddAllergen(Allergen.TreeNuts);
         ingredient.AddAllergen(Allergen.SesameSeeds);
 
-        Assert.Contains(Allergen.Nuts, ingredient.Allergens);
+        Assert.Contains(Allergen.TreeNuts, ingredient.Allergens);
         Assert.Contains(Allergen.SesameSeeds, ingredient.Allergens);
     }
 
@@ -110,6 +110,27 @@ public class IngredientTests
 
         // Attempt to add an invalid allergen (not in the Allergen enum)
         Assert.Throws<ArgumentException>(() => ingredient.AddAllergen((Allergen)999));
+    }
+
+    [Fact]
+
+    public void Rename_ValidNewName_ChangesName()
+    {
+        var ingredient = new Ingredient("Old Name", StockUnit.Gram, StorageType.Ambient);
+
+        ingredient.Rename("New Name");
+
+        Assert.Equal("New Name", ingredient.Name);
+    }
+
+    [Fact]
+    public void Rename_BlankNewName_ThrowsArgumentException()
+    {
+        var ingredient = new Ingredient("Old Name", StockUnit.Gram, StorageType.Ambient);
+
+        Assert.Throws<ArgumentException>(() => ingredient.Rename("   "));
+
+        Assert.Equal("Old Name", ingredient.Name);
     }
 }
 

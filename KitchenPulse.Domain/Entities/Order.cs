@@ -2,10 +2,14 @@
 
 public class Order
 {
+
+    private readonly List<OrderLine> _lines = new();
     public Guid Id { get; private set; }
     public int OrderNumber { get; private set; }
     public string Table { get; private set; }
     public DateTime PlacedAtUtc { get; private set; }
+
+    public IReadOnlyCollection<OrderLine> Lines => _lines;
 
     public Order(int orderNumber, string table, DateTime placedAtUtc)
     {
@@ -25,6 +29,11 @@ public class Order
         PlacedAtUtc = placedAtUtc;
     }
 
-  
 
+    public void AddDish(Dish dish, int quantity)
+    {
+        var line = new OrderLine(dish, quantity);
+
+        _lines.Add(line);
+    }
 }

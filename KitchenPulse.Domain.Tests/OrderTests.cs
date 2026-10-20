@@ -70,6 +70,47 @@ namespace KitchenPulse.Domain.Tests
 
            
         }
+
+        [Fact]
+        public void AddDish_NewDish_AddsLine()
+        {
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+
+            order.AddDish(classic, 2);
+
+            var line = Assert.Single(order.Lines);
+            Assert.Equal(classic, line.Dish);
+            Assert.Equal(2, line.Quantity);
+        }
+
+        [Fact]
+        public void AddDish_SameDishTwice_AddsTwoLines()
+        {
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+
+            order.AddDish(classic, 2);
+            order.AddDish(classic, 1);
+
+            Assert.Equal(2, order.Lines.Count);
+
+        }
+
+        [Fact]
+        public void AddDish_ZeroQuantity_ThrowsArgumentException()
+        {
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+
+
+            var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 0));
+
+            Assert.Equal("quantity", exception.ParamName);
+        }
     }
 }
 

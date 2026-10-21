@@ -221,6 +221,40 @@ namespace KitchenPulse.Domain.Tests
             Assert.Empty(line.Removed);
         }
 
+        [Fact]
+        public void Allergens_IngredientRemoved_AllergenGone()
+        {
+            var (line, order, cheese) = CreateOrderWithClassic();
+            cheese.AddAllergen(Allergen.Milk);
+            line.RemoveIngredient(cheese);
+
+            Assert.DoesNotContain(Allergen.Milk, line.Allergens);
+        }
+
+
+        [Fact]
+        public void Allergens_ExtraAdded_AllergenIncluded()
+        {
+            var (line, order, cheese) = CreateOrderWithClassic();
+            var egg = new Ingredient("egg", StockUnit.Each, StorageType.Chilled);
+            egg.AddAllergen(Allergen.Eggs);
+            line.AddExtra(egg);
+
+            Assert.Contains(Allergen.Eggs, line.Allergens);
+        }
+
+        [Fact]
+        public void Allergens_OtherIngredientSameAllergen_StillIncluded()
+        {
+            var (line, order, cheese) = CreateOrderWithClassic();
+            cheese.AddAllergen(Allergen.Milk);
+            var sauce = new Ingredient("Sauce", StockUnit.Milliliter, StorageType.Chilled);
+            sauce.AddAllergen(Allergen.Milk);
+            line.Dish.AddIngredient(sauce, 20);
+            line.RemoveIngredient(cheese);
+
+            Assert.Contains(Allergen.Milk, line.Allergens);
+        }
 
         private static (OrderLine line, Order order, Ingredient cheese) CreateOrderWithClassic()
         {
@@ -236,6 +270,8 @@ namespace KitchenPulse.Domain.Tests
 
             return (line, order, cheese);
         }
+
+       
 
     }
 }

@@ -1,14 +1,18 @@
-﻿namespace KitchenPulse.Domain.Entities;
+﻿using KitchenPulse.Domain.Enums;
+
+namespace KitchenPulse.Domain.Entities;
 
 public class OrderLine
 {
     private readonly List<Ingredient> _removed = new();
     private readonly List<Ingredient> _extras = new();
+    private readonly List<Allergen> _allergen = new();
     public Dish Dish { get; private set; }
     public int Quantity { get; private set; }
 
     public IReadOnlyCollection<Ingredient> Removed => _removed;
     public IReadOnlyCollection<Ingredient> Extras => _extras;
+    public IReadOnlyCollection<Allergen> Allergens => Dish.RecipeLines.Select(rl => rl.Ingredient).Where(i => !_removed.Contains(i)).Concat(_extras).SelectMany(i => i.Allergens).Distinct().ToList();
 
     public OrderLine(Dish dish, int quantity)
     {
@@ -61,4 +65,5 @@ public class OrderLine
             _extras.Add(ingredient);
         }
     }
+
 }

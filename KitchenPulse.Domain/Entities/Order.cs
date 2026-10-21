@@ -30,10 +30,19 @@ public class Order
     }
 
 
-    public void AddDish(Dish dish, int quantity)
+    public OrderLine AddDish(Dish dish, int quantity, IEnumerable<Ingredient>? removeIngredients = null)
     {
         var line = new OrderLine(dish, quantity);
 
+        foreach (var ingredient in removeIngredients ?? [])
+        {
+            line.RemoveIngredient(ingredient);
+        }
+
         _lines.Add(line);
+
+        return line;
     }
+
+   
 }

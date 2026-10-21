@@ -1,8 +1,5 @@
 ﻿using KitchenPulse.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
+using KitchenPulse.Domain.Enums;
 
 namespace KitchenPulse.Domain.Tests
 {
@@ -35,7 +32,7 @@ namespace KitchenPulse.Domain.Tests
 
             var exception = Assert.Throws<ArgumentException>(() => new Order(orderNumber, Table, placedAtUtc));
 
-            
+
             Assert.Equal("orderNumber", exception.ParamName);
         }
 
@@ -68,7 +65,7 @@ namespace KitchenPulse.Domain.Tests
             Assert.Equal("8", order.Table);
             Assert.Equal(placedAtUtc, order.PlacedAtUtc);
 
-           
+
         }
 
         [Fact]
@@ -111,6 +108,135 @@ namespace KitchenPulse.Domain.Tests
 
             Assert.Equal("quantity", exception.ParamName);
         }
+
+        [Fact]
+        public void RemoveIngredient_InDish_AddsToRemoved()
+        {
+            var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+            classic.AddIngredient(cheese, 1);
+
+            var line = order.AddDish(classic, 1);
+
+            line.RemoveIngredient(cheese);
+
+            Assert.Single(line.Removed);
+        }
+
+        [Fact]
+        public void AddDish_WithRemovedIngredient_LineHasRemoved()
+        {
+            // Arrange
+            var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+            classic.AddIngredient(cheese, 1);
+
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+
+            // Act
+            var line = order.AddDish(classic, 1, [cheese]);
+
+            // Assert
+            Assert.Single(line.Removed);
+        }
+
+        [Fact]
+        public void AddDish_RemoveIngredientNotInDish_ThrowsAndLineNotAdded()
+        {
+            var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+            var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+            classic.AddIngredient(beef, 1);
+
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 1, [cheese]));
+
+            Assert.Equal("ingredient", exception.ParamName);
+
+            Assert.Empty(order.Lines);
+        }
+
+        [Fact]
+        public void AddDish_TwoClassicsOneWithoutCheese_OnlyOneLineChanged()
+        {
+
+            var (line, order, cheese) = CreateOrderWithClassic();
+            var line2 = order.AddDish(line.Dish, 1, [cheese]);
+
+            Assert.Empty(line.Removed);
+            Assert.Single(line2.Removed);
+
+        }
+
+        [Fact]
+        public void RemoveIngredient_SameTwice_OnlyOnce()
+        {
+            var (line, order, cheese) = CreateOrderWithClassic();
+
+            line.RemoveIngredient(cheese);
+            line.RemoveIngredient(cheese);
+
+            Assert.Single(line.Removed);
+        }
+
+        [Fact]
+        public void AddExtra_AnyIngredient_AddsToExtras()
+        {
+            var (line, order, cheese) = CreateOrderWithClassic();
+
+            var bacon = new Ingredient("Bacon", StockUnit.Each, StorageType.Chilled);
+
+            line.AddExtra(bacon);
+
+            Assert.Single(line.Extras);
+        }
+
+        [Fact]
+        public void AddExtra_AlreadyRemoved_ThrowsInvalidOperationException()
+        {
+            var (line, order, cheese) = CreateOrderWithClassic();
+
+            line.RemoveIngredient(cheese);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => line.AddExtra(cheese));
+
+            Assert.Empty(line.Extras);
+        }
+
+        [Fact]
+        public void RemoveIngredient_AlreadyExtra_ThrowsInvalidOperationException()
+        {
+
+            var (line, order, cheese) = CreateOrderWithClassic();
+
+            line.AddExtra(cheese);
+
+            Assert.Throws<InvalidOperationException>(() => line.RemoveIngredient(cheese));
+
+            Assert.Empty(line.Removed);
+        }
+
+
+        private static (OrderLine line, Order order, Ingredient cheese) CreateOrderWithClassic()
+        {
+            var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+            var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+            classic.AddIngredient(beef, 1);
+            classic.AddIngredient(cheese, 1);
+
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var line = order.AddDish(classic, 1);
+
+            return (line, order, cheese);
+        }
+
     }
 }
 

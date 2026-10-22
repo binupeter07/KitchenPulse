@@ -13,6 +13,7 @@ public class OrderLine
     public Dish Dish { get; private set; }
     public int Quantity { get; private set; }
     public Course Course { get; private set; }
+    public bool IsDone { get; private set; }
     public IReadOnlyCollection<Ingredient> Removed => _removed;
     public IReadOnlyCollection<Ingredient> Extras => _extras;
     public IReadOnlyCollection<Allergen> CustomerAllergies => _customerAllergies;
@@ -35,6 +36,7 @@ public class OrderLine
         .Where(i => !_removed.Contains(i))
         .Concat(_extras);
 
+  
     public OrderLine(Dish dish, int quantity, Course course = Course.Main)
     {
         ArgumentNullException.ThrowIfNull(dish);
@@ -98,5 +100,10 @@ public class OrderLine
         {
             _customerAllergies.Add(allergen);
         }
+    }
+
+    public void MarkDone()
+    {
+        IsDone = true;
     }
 }

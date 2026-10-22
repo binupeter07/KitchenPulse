@@ -1,4 +1,6 @@
-﻿namespace KitchenPulse.Domain.Entities;
+﻿using KitchenPulse.Domain.Enums;
+
+namespace KitchenPulse.Domain.Entities;
 
 public class Order
 {
@@ -30,9 +32,9 @@ public class Order
     }
 
 
-    public OrderLine AddDish(Dish dish, int quantity, IEnumerable<Ingredient>? removeIngredients = null)
+    public OrderLine AddDish(Dish dish, int quantity, IEnumerable<Ingredient>? removeIngredients = null, Course course = Course.Main)
     {
-        var line = new OrderLine(dish, quantity);
+        var line = new OrderLine(dish, quantity,course);
 
         foreach (var ingredient in removeIngredients ?? [])
         {

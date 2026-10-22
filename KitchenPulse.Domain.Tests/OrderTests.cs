@@ -73,7 +73,7 @@ public class OrderTests
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var order = new Order(1043, "8", placedAtUtc);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m,Station.Grill);
 
         order.AddDish(classic, 2);
 
@@ -87,7 +87,7 @@ public class OrderTests
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var order = new Order(1043, "8", placedAtUtc);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m,Station.Grill);
 
         order.AddDish(classic, 2);
         order.AddDish(classic, 1);
@@ -101,7 +101,7 @@ public class OrderTests
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var order = new Order(1043, "8", placedAtUtc);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m,Station.Grill);
 
 
         var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 0));
@@ -116,7 +116,7 @@ public class OrderTests
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var order = new Order(1043, "8", placedAtUtc);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(cheese, 1);
 
         var line = order.AddDish(classic, 1);
@@ -131,7 +131,7 @@ public class OrderTests
     {
         // Arrange
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(cheese, 1);
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
@@ -149,7 +149,7 @@ public class OrderTests
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(beef, 1);
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
@@ -299,6 +299,23 @@ public class OrderTests
         Assert.Empty(line.UnsafeIngredients);
     }
 
+    [Fact]
+    public void MarkDone_NewLine_IsDone()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        line.MarkDone();
+        Assert.True(line.IsDone);
+    }
+
+    [Fact]
+    public void MarkDone_Twice_StillDone()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        line.MarkDone();
+        line.MarkDone();
+        Assert.True(line.IsDone);
+
+    }
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);

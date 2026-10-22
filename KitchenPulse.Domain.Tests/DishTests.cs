@@ -14,7 +14,7 @@ public class DishTests
         decimal price = 12.99m;
 
         // Act
-        var dish = new Dish(name, description, price,);
+        var dish = new Dish(name, description, price,Station.Grill);
 
         // Assert
         Assert.NotEqual(Guid.Empty, dish.Id);
@@ -58,7 +58,7 @@ public class DishTests
         decimal price = 10.00m;
 
         // Act
-        var dish = new Dish(name, description, price, Station.Grill));
+        var dish = new Dish(name, description, price, Station.Grill);
 
         // Assert
         Assert.Equal(string.Empty, dish.Description);

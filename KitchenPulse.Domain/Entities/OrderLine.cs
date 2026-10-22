@@ -1,4 +1,6 @@
-﻿using KitchenPulse.Domain.Enums;
+﻿using KitchenPulse.Domain.Common;
+using KitchenPulse.Domain.Enums;
+using static System.Collections.Specialized.BitVector32;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -10,6 +12,7 @@ public class OrderLine
 
     public Dish Dish { get; private set; }
     public int Quantity { get; private set; }
+    public Course Course { get; private set; }
     public IReadOnlyCollection<Ingredient> Removed => _removed;
     public IReadOnlyCollection<Ingredient> Extras => _extras;
     public IReadOnlyCollection<Allergen> CustomerAllergies => _customerAllergies;
@@ -32,9 +35,10 @@ public class OrderLine
         .Where(i => !_removed.Contains(i))
         .Concat(_extras);
 
-    public OrderLine(Dish dish, int quantity)
+    public OrderLine(Dish dish, int quantity, Course course = Course.Main)
     {
         ArgumentNullException.ThrowIfNull(dish);
+        Guard.EnumDefined(course, nameof(course));
 
         if (quantity <= 0)
         {
@@ -43,6 +47,7 @@ public class OrderLine
 
         Dish = dish;
         Quantity = quantity;
+        Course = course;
     }
 
     public void RemoveIngredient(Ingredient ingredient)

@@ -1,4 +1,5 @@
-﻿using KitchenPulse.Domain.Enums;
+﻿using KitchenPulse.Domain.Common;
+using KitchenPulse.Domain.Enums;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -11,21 +12,26 @@ public class Dish
     public string Name { get; private set; }
     public string Description { get; private set; }
     public decimal Price { get; private set; }
+    public Station Station { get; private set; }
     public IReadOnlyCollection<RecipeLine> RecipeLines => _recipeLines;
     public IReadOnlyCollection<Allergen> Allergens => _recipeLines
         .SelectMany(rl => rl.Ingredient.Allergens)
         .Distinct()
         .ToList();
 
-    public Dish(string name, string? description, decimal price)
+    public Dish(string name, string? description, decimal price, Station station)
     {
+        
+
         ValidateName(name);
         ValidatePrice(price);
+        Guard.EnumDefined(station, nameof(station));
 
         Id = Guid.NewGuid();
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
         Price = price;
+        Station = station;
     }
 
 

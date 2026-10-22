@@ -304,7 +304,7 @@ public class OrderTests
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
         var sauce = new Ingredient("Cheese sauce", StockUnit.Milliliter, StorageType.Chilled);
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(beef, 1);
         classic.AddIngredient(cheese, 1);
         cheese.AddAllergen(Allergen.Milk);

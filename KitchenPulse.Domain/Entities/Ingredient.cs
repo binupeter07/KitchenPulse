@@ -1,4 +1,6 @@
-﻿using KitchenPulse.Domain.Enums;
+﻿using KitchenPulse.Domain.Common;
+using KitchenPulse.Domain.Enums;
+using static System.Collections.Specialized.BitVector32;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -14,7 +16,10 @@ public class Ingredient
 
     public Ingredient(string name, StockUnit unit, StorageType storageType)
     {
+
         ValidateName(name);
+        Guard.EnumDefined(storageType, nameof(storageType));
+
         Id = Guid.NewGuid();
         Name = name.Trim();
         Unit = unit;
@@ -24,10 +29,7 @@ public class Ingredient
     public void AddAllergen(Allergen allergen)
     {
 
-        if (!Enum.IsDefined(allergen))
-        {
-            throw new ArgumentException("Invalid allergen value.", nameof(allergen));
-        }
+        Guard.EnumDefined(allergen, nameof(allergen));
 
         if (!_allergens.Contains(allergen))
         {

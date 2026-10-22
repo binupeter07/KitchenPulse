@@ -14,7 +14,7 @@ public class DishTests
         decimal price = 12.99m;
 
         // Act
-        var dish = new Dish(name, description, price);
+        var dish = new Dish(name, description, price,);
 
         // Assert
         Assert.NotEqual(Guid.Empty, dish.Id);
@@ -32,7 +32,7 @@ public class DishTests
         decimal price = 10.00m;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new Dish(name, description, price));
+        var exception = Assert.Throws<ArgumentException>(() => new Dish(name, description, price,Station.Grill));
         Assert.Equal("name", exception.ParamName);
     }
 
@@ -45,7 +45,7 @@ public class DishTests
         decimal price = 0.00m;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new Dish(name, description, price));
+        var exception = Assert.Throws<ArgumentException>(() => new Dish(name, description, price,Station.Grill));
         Assert.Equal("price", exception.ParamName);
     }
 
@@ -58,7 +58,7 @@ public class DishTests
         decimal price = 10.00m;
 
         // Act
-        var dish = new Dish(name, description, price);
+        var dish = new Dish(name, description, price, Station.Grill));
 
         // Assert
         Assert.Equal(string.Empty, dish.Description);
@@ -73,7 +73,7 @@ public class DishTests
         decimal price = -5.00m;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new Dish(name, description, price));
+        var exception = Assert.Throws<ArgumentException>(() => new Dish(name, description, price, Station.Grill));
         Assert.Equal("price", exception.ParamName);
     }
 
@@ -81,7 +81,7 @@ public class DishTests
     public void AddIngredient_NewIngredient_AddsRecipeLine()
     {
         // Arrange
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
         var ingredient = new Ingredient("Ingredient Name", StockUnit.Gram, StorageType.Chilled);
 
         // Act
@@ -97,7 +97,7 @@ public class DishTests
     public void AddIngredient_SameIngredientTwice_ThrowsInvalidOperationException()
     {
         // Arrange
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
         var ingredient = new Ingredient("Ingredient Name", StockUnit.Gram, StorageType.Chilled);
         dish.AddIngredient(ingredient, 2.5m);                // ← CHANGED: this is preparing, so it's Arrange
 
@@ -110,7 +110,7 @@ public class DishTests
     public void AddIngredient_NullIngredient_ThrowsArgumentNullException()
     {
         // Arrange
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
         Ingredient? ingredient = null;
 
         // Act & Assert
@@ -122,7 +122,7 @@ public class DishTests
     public void AddIngredient_ZeroQuantity_ThrowsArgumentException()
     {
         // Arrange
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
         var ingredient = new Ingredient("Ingredient Name", StockUnit.Gram, StorageType.Chilled);
 
         // Act & Assert
@@ -133,7 +133,7 @@ public class DishTests
     [Fact]
     public void Allergens_NoIngredients_IsEmpty()
     {
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
 
         // Assert
         Assert.Empty(dish.Allergens);
@@ -142,7 +142,7 @@ public class DishTests
     [Fact]
     public void Allergens_SharedAllergen_ShowsOnce()
     {
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
         var ingredient1 = new Ingredient("Ingredient 1", StockUnit.Gram, StorageType.Chilled);
         ingredient1.AddAllergen(Allergen.Milk);
         var ingredient2 = new Ingredient("Ingredient 2", StockUnit.Gram, StorageType.Chilled);
@@ -159,7 +159,7 @@ public class DishTests
     [Fact]
     public void Allergens_IngredientUpdatedLater_DishSeesIt()
     {
-        var dish = new Dish("Dish Name", "Some description", 10.00m);
+        var dish = new Dish("Dish Name", "Some description", 10.00m, Station.Grill);
         var ingredient = new Ingredient("Cheese", StockUnit.Gram, StorageType.Chilled);
         dish.AddIngredient(ingredient, 2.5m);
         // Act

@@ -316,6 +316,73 @@ public class OrderTests
         Assert.True(line.IsDone);
 
     }
+
+    [Fact]
+    public void IsCourseReady_AllKitchenLinesDone_True()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var fries = new Dish("Fries", "Classic beef burger", 11.50m, Station.Grill);
+        var friesLine = order.AddDish(fries, 2);
+
+        line.MarkDone();
+        friesLine.MarkDone();
+
+        Assert.True(order.IsCourseReady(Course.Main));
+    }
+
+    [Fact]
+    public void IsCourseReady_OneLineNotDone_False()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var fries = new Dish("Fries", "Classic beef burger", 11.50m, Station.Grill);
+        var friesLine = order.AddDish(fries, 2);
+
+        line.MarkDone();
+        Assert.False(order.IsCourseReady(Course.Main));
+
+    }
+
+    [Fact]
+    public void IsCourseReady_FrontLineNotDone_StillTrue()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var fries = new Dish("Fries", "Classic beef burger", 11.50m, Station.Grill);
+        var milkshake = new Dish("MilkShake", "New Chocolate milk shake", 10.99m, Station.Front);
+        var friesLine = order.AddDish(fries, 2);
+        var shakeLine = order.AddDish(milkshake,1);
+
+        line.MarkDone();
+        friesLine.MarkDone();
+        Assert.True(order.IsCourseReady(Course.Main));
+        
+
+    }
+
+    [Fact]
+    public void IsCourseReady_OtherCourseNotDone_OnlyChecksThisCourse()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var fries = new Dish("Fries", "Classic beef burger", 11.50m, Station.Grill);
+        var wings = new Dish("Wings", "Spicy wings", 11.50m, Station.Fryer);
+        var milkshake = new Dish("MilkShake", "New Chocolate milk shake", 10.99m, Station.Front);
+        var friesLine = order.AddDish(fries, 2);
+        var shakeLine = order.AddDish(milkshake, 1);
+        var wingsLine = order.AddDish(wings, 1, course : Course.Starter);
+
+        line.MarkDone();
+        wingsLine.MarkDone();
+        Assert.True(order.IsCourseReady(Course.Starter));
+
+    }
+
+    [Fact]
+    public void IsCourseReady_NoLinesInCourse_False()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        line.MarkDone();
+        Assert.False(order.IsCourseReady(Course.Starter));
+    }
+
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);

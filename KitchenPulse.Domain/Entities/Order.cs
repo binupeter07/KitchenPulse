@@ -1,4 +1,5 @@
-﻿using KitchenPulse.Domain.Enums;
+﻿using KitchenPulse.Domain.Common;
+using KitchenPulse.Domain.Enums;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -34,7 +35,7 @@ public class Order
 
     public OrderLine AddDish(Dish dish, int quantity, IEnumerable<Ingredient>? removeIngredients = null, Course course = Course.Main)
     {
-        var line = new OrderLine(dish, quantity,course);
+        var line = new OrderLine(dish, quantity, course);
 
         foreach (var ingredient in removeIngredients ?? [])
         {
@@ -46,5 +47,14 @@ public class Order
         return line;
     }
 
-   
+
+    public bool IsCourseReady(Course course)
+    {
+        Guard.EnumDefined(course, nameof(course));
+
+        var kitchenLines = _lines.Where(l => l.Course == course)
+                          .Where(l => l.Dish.Station != Station.Front);
+        return kitchenLines.Any() && kitchenLines.All(l => l.IsDone);
+    }
+
 }

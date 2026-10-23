@@ -383,6 +383,38 @@ public class OrderTests
         Assert.False(order.IsCourseReady(Course.Starter));
     }
 
+    [Fact]
+    public void CollectCourse_WhenReady_MarksCollected()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        line.MarkDone();
+        order.CollectCourse(Course.Main);
+
+        Assert.True(order.IsCourseCollected(Course.Main));
+    }
+
+    [Fact]
+    public void CollectCourse_WhenNotReady_Throws()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+
+        Assert.Throws<InvalidOperationException>(() => order.CollectCourse(Course.Main));
+
+        Assert.False(order.IsCourseCollected(Course.Main));
+    }
+
+    [Fact]
+    public void CollectCourse_Twice_NothingChanges()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        line.MarkDone();
+        order.CollectCourse(Course.Main);
+        order.CollectCourse(Course.Main);
+
+        Assert.True(order.IsCourseCollected(Course.Main));
+    }
+
+
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);

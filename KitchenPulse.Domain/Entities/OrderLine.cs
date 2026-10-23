@@ -10,6 +10,7 @@ public class OrderLine
     private readonly List<Ingredient> _extras = new();
     private readonly List<Allergen> _customerAllergies = new();
 
+
     public Dish Dish { get; private set; }
     public int Quantity { get; private set; }
     public Course Course { get; private set; }
@@ -22,14 +23,13 @@ public class OrderLine
         .SelectMany(i => i.Allergens)
         .Distinct()
         .ToList();
-
     public IReadOnlyCollection<Allergen> UnsafeAllergens => Allergens
         .Intersect(CustomerAllergies)
         .ToList();
-
     public IReadOnlyCollection<Ingredient> UnsafeIngredients => IngredientsOnPlate
         .Where(i => i.Allergens.Any(a => _customerAllergies.Contains(a)))
         .ToList();
+
 
     private IEnumerable<Ingredient> IngredientsOnPlate => Dish.RecipeLines
         .Select(rl => rl.Ingredient)
@@ -106,4 +106,7 @@ public class OrderLine
     {
         IsDone = true;
     }
+
+
+
 }

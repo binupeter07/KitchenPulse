@@ -7,12 +7,16 @@ public class Order
 {
 
     private readonly List<OrderLine> _lines = new();
+    private readonly List<Course> _collectedCourses = new();
+
     public Guid Id { get; private set; }
     public int OrderNumber { get; private set; }
     public string Table { get; private set; }
     public DateTime PlacedAtUtc { get; private set; }
+    public bool IsCollected { get; private set; }
 
     public IReadOnlyCollection<OrderLine> Lines => _lines;
+    public IReadOnlyCollection<Course> CollectedCourse => _collectedCourses;
 
     public Order(int orderNumber, string table, DateTime placedAtUtc)
     {
@@ -57,4 +61,27 @@ public class Order
         return kitchenLines.Any() && kitchenLines.All(l => l.IsDone);
     }
 
+    public void CollectCourse(Course course)
+    {
+        Guard.EnumDefined(course, nameof(course));
+
+        if (IsCourseReady(course) )
+        {
+            if (!_collectedCourses.Contains(course))
+            {
+                _collectedCourses.Add(course);
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException("Course is not ready");
+        }
+    }
+
+    public bool IsCourseCollected(Course course)
+    {
+        Guard.EnumDefined(course,nameof(course));
+
+        return _collectedCourses.Contains(course);
+    }
 }

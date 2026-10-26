@@ -15,9 +15,10 @@ public class Order
     public DateTime PlacedAtUtc { get; private set; }
     public bool IsCollected { get; private set; }
 
+
     public IReadOnlyCollection<OrderLine> Lines => _lines;
     public IReadOnlyCollection<Course> CollectedCourse => _collectedCourses;
-
+    public bool IsMainsOnHold => _lines.Any(l => l.Course == Course.Starter) && !IsCourseCollected(Course.Starter);
     public Order(int orderNumber, string table, DateTime placedAtUtc)
     {
 

@@ -414,6 +414,47 @@ public class OrderTests
         Assert.True(order.IsCourseCollected(Course.Main));
     }
 
+    [Fact]
+    public void IsMainsOnHold_StartersNotCollected_True()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var wings = new Dish("Wings", "Spicy wings", 11.50m, Station.Fryer);
+        var wingsLine = order.AddDish(wings, 1, course: Course.Starter);
+
+        Assert.True(order.IsMainsOnHold);
+
+    }
+
+    [Fact]
+    public void IsMainsOnHold_StartersCollected_False()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var wings = new Dish("Wings", "Spicy wings", 11.50m, Station.Fryer);
+        var wingsLine = order.AddDish(wings, 1, course: Course.Starter);
+        wingsLine.MarkDone();
+        order.CollectCourse(Course.Starter);
+        Assert.False(order.IsMainsOnHold);
+
+    }
+
+    [Fact]
+    public void IsMainsOnHold_NoStarters_False()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+
+        Assert.False(order.IsMainsOnHold);
+
+    }
+
+    [Fact]
+    public void IsMainsOnHold_StartersReadyButNotCollected_True()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var wings = new Dish("Wings", "Spicy wings", 11.50m, Station.Fryer);
+        var wingsLine = order.AddDish(wings, 1, course: Course.Starter);
+        wingsLine.MarkDone();
+        Assert.True(order.IsMainsOnHold);
+    }
 
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {

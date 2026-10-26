@@ -1,6 +1,5 @@
 ﻿using KitchenPulse.Domain.Common;
 using KitchenPulse.Domain.Enums;
-using static System.Collections.Specialized.BitVector32;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -13,7 +12,9 @@ public class Ingredient
     public StockUnit Unit { get; private set; }
     public StorageType StorageType { get; private set; }
     public IReadOnlyCollection<Allergen> Allergens => _allergens;
+    public decimal CurrentStock { get; private set; }
 
+    public bool IsStockBelowZero => CurrentStock < 0;
     public Ingredient(string name, StockUnit unit, StorageType storageType)
     {
 
@@ -44,6 +45,17 @@ public class Ingredient
 
     }
 
+    public void ApplyMovement(StockMovement movement)
+    {
+        ArgumentNullException.ThrowIfNull(movement);
+
+        if (movement.Ingredient.Id != Id)
+        {
+            throw new ArgumentException("Ingredient is not matching", nameof(movement));
+        }
+        CurrentStock += movement.Change;
+    }
+
     public void Rename(string newName)
     {
         ValidateName(newName);
@@ -58,5 +70,6 @@ public class Ingredient
             throw new ArgumentException("Ingredient name cannot be null or blank.", nameof(name));
         }
     }
+
 
 }

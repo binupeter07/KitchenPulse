@@ -13,6 +13,7 @@ public class Ingredient
     public StorageType StorageType { get; private set; }
     public IReadOnlyCollection<Allergen> Allergens => _allergens;
     public decimal CurrentStock { get; private set; }
+    public decimal ExtraPortion { get; private set; }
 
     public bool IsStockBelowZero => CurrentStock < 0;
     public Ingredient(string name, StockUnit unit, StorageType storageType)
@@ -54,6 +55,15 @@ public class Ingredient
             throw new ArgumentException("Ingredient is not matching", nameof(movement));
         }
         CurrentStock += movement.Change;
+    }
+
+    public void SetExtraPortion(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Extra should be greater than zero", nameof(amount));
+        }
+        ExtraPortion = amount;
     }
 
     public void Rename(string newName)

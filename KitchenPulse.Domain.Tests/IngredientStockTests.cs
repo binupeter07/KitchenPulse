@@ -55,5 +55,33 @@ namespace KitchenPulse.Domain.Tests
             Assert.Equal(-1, beef.CurrentStock);
             Assert.True(beef.IsStockBelowZero);
         }
+
+        [Fact]
+        public void NewIngredient_ExtraPortion_IsZero()
+        {
+            var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+
+            Assert.Equal(0m, bacon.ExtraPortion);
+        }
+
+        [Fact]
+        public void SetExtraPortion_Positive_SetsIt()
+        {
+            var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+
+            bacon.SetExtraPortion(0.30m);
+
+            Assert.Equal(0.30m, bacon.ExtraPortion);
+        }
+
+        [Fact]
+        public void SetExtraPortion_Zero_Throws()
+        {
+            var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+            var exception = Assert.Throws<ArgumentException>(()=> bacon.SetExtraPortion(0));
+
+            Assert.Equal("amount", exception.ParamName);
+            Assert.Equal(0m, bacon.ExtraPortion);
+        }
     }
 }

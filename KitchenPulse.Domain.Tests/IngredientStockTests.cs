@@ -83,5 +83,39 @@ namespace KitchenPulse.Domain.Tests
             Assert.Equal("amount", exception.ParamName);
             Assert.Equal(0m, bacon.ExtraPortion);
         }
+
+        [Fact]
+        public void AddExtra_NoExtraPortionSet_Throws()
+        {
+            var (line, order, cheese) = CreateClassicWithMilkyCheese();
+            var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+
+            Assert.Throws<InvalidOperationException>(() => line.AddExtra(bacon));
+            Assert.Empty(line.Extras);
+        }
+
+        private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
+        {
+            var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+            cheese.SetExtraPortion(1m);
+            var sauce = new Ingredient("Cheese sauce", StockUnit.Milliliter, StorageType.Chilled);
+            sauce.SetExtraPortion(20m);
+            var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
+            beef.SetExtraPortion(1m);
+            var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
+            classic.AddIngredient(beef, 1);
+            classic.AddIngredient(cheese, 1);
+            cheese.AddAllergen(Allergen.Milk);
+
+            var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var order = new Order(1043, "8", placedAtUtc);
+            var line = order.AddDish(classic, 1);
+
+            return (line, order, cheese);
+        }
+
     }
+
+
 }
+

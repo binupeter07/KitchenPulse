@@ -174,6 +174,23 @@ public class OrderTests
     }
 
     [Fact]
+    public void AddDish_DefaultCourse_IsMain()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+
+        Assert.Equal(Course.Main, line.Course);
+    }
+
+    [Fact]
+    public void AddDish_UndefinedCourse_Throws()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        Assert.Throws<ArgumentException>(()=> order.AddDish(line.Dish, 1, course: (Course)99));
+
+        Assert.Single(order.Lines);
+    }
+
+    [Fact]
     public void RemoveIngredient_SameTwice_OnlyOnce()
     {
         var (line, order, cheese) = CreateClassicWithMilkyCheese();
@@ -190,6 +207,7 @@ public class OrderTests
         var (line, order, cheese) = CreateClassicWithMilkyCheese();
 
         var bacon = new Ingredient("Bacon", StockUnit.Each, StorageType.Chilled);
+        bacon.SetExtraPortion(30m);
 
         line.AddExtra(bacon);
 
@@ -206,6 +224,19 @@ public class OrderTests
         var exception = Assert.Throws<InvalidOperationException>(() => line.AddExtra(cheese));
 
         Assert.Empty(line.Extras);
+    }
+
+    [Fact]
+    public void AddExtra_SameTwice_OnlyOnce()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        var bacon = new Ingredient("Bacon", StockUnit.Each, StorageType.Chilled);
+        bacon.SetExtraPortion(2m);
+
+        line.AddExtra(bacon);
+        line.AddExtra(bacon);
+
+        Assert.Single(line.Extras);
     }
 
     [Fact]
@@ -237,6 +268,7 @@ public class OrderTests
     {
         var (line, order, cheese) = CreateClassicWithMilkyCheese();
         var egg = new Ingredient("egg", StockUnit.Each, StorageType.Chilled);
+        egg.SetExtraPortion(1m);
         egg.AddAllergen(Allergen.Eggs);
         line.AddExtra(egg);
 
@@ -262,6 +294,25 @@ public class OrderTests
         var (line, order, cheese) = CreateClassicWithMilkyCheese();
         line.AddCustomerAllergy(Allergen.Milk);
         Assert.Contains(Allergen.Milk, line.CustomerAllergies);
+    }
+
+    [Fact]
+    public void AddCustomerAllergy_UndefinedValue_Throws()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+        Assert.Throws<ArgumentException>(()=> line.AddCustomerAllergy((Allergen)999));
+        Assert.Empty(line.CustomerAllergies);
+    }
+
+    [Fact]
+    public void AddCustomerAllergy_SameTwice_OnlyOnce()
+    {
+        var (line, order, cheese) = CreateClassicWithMilkyCheese();
+
+        line.AddCustomerAllergy(Allergen.Milk);
+        line.AddCustomerAllergy(Allergen.Milk);
+
+        Assert.Single(line.CustomerAllergies);
     }
 
     [Fact]
@@ -459,8 +510,11 @@ public class OrderTests
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+        cheese.SetExtraPortion(1m);
         var sauce = new Ingredient("Cheese sauce", StockUnit.Milliliter, StorageType.Chilled);
+        sauce.SetExtraPortion(20m);
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
+        beef.SetExtraPortion(1m);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(beef, 1);
         classic.AddIngredient(cheese, 1);

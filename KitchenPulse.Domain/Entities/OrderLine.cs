@@ -1,6 +1,5 @@
 ﻿using KitchenPulse.Domain.Common;
 using KitchenPulse.Domain.Enums;
-using static System.Collections.Specialized.BitVector32;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -36,7 +35,7 @@ public class OrderLine
         .Where(i => !_removed.Contains(i))
         .Concat(_extras);
 
-  
+
     public OrderLine(Dish dish, int quantity, Course course = Course.Main)
     {
         ArgumentNullException.ThrowIfNull(dish);
@@ -83,6 +82,11 @@ public class OrderLine
             throw new InvalidOperationException($"{ingredient.Name} can't be removed and added as an extra at the same time.");
         }
 
+        if (ingredient.ExtraPortion <= 0)
+        {
+            throw new InvalidOperationException($"{ingredient.Name} has no extra portion set.");
+        }
+
         if (!_extras.Contains(ingredient))
         {
             _extras.Add(ingredient);
@@ -91,10 +95,7 @@ public class OrderLine
 
     public void AddCustomerAllergy(Allergen allergen)
     {
-        if (!Enum.IsDefined(allergen))
-        {
-            throw new ArgumentException("Invalid allergen value.", nameof(allergen));
-        }
+        Guard.EnumDefined(allergen, nameof(allergen));
 
         if (!_customerAllergies.Contains(allergen))
         {

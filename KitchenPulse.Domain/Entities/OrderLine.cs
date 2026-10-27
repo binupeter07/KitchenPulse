@@ -17,7 +17,7 @@ public class OrderLine
     public IReadOnlyCollection<Ingredient> Removed => _removed;
     public IReadOnlyCollection<Ingredient> Extras => _extras;
     public IReadOnlyCollection<Allergen> CustomerAllergies => _customerAllergies;
-
+    public bool HasCustomerAllergy => _customerAllergies.Any();
     public IReadOnlyCollection<Allergen> Allergens => IngredientsOnPlate
         .SelectMany(i => i.Allergens)
         .Distinct()
@@ -93,6 +93,20 @@ public class OrderLine
         }
     }
 
+    public void RemoveUnsafeIngredients()
+    {
+        foreach (var ingredient in UnsafeIngredients)
+        {
+            if (_extras.Contains(ingredient))
+            {
+                _extras.Remove(ingredient);
+            }
+            else
+            {
+                RemoveIngredient(ingredient);
+            }
+        }
+    }
     public void AddCustomerAllergy(Allergen allergen)
     {
         Guard.EnumDefined(allergen, nameof(allergen));

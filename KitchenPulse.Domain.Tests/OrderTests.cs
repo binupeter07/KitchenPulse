@@ -1,5 +1,6 @@
 ﻿using KitchenPulse.Domain.Entities;
 using KitchenPulse.Domain.Enums;
+using System.Net.Sockets;
 
 namespace KitchenPulse.Domain.Tests;
 
@@ -640,6 +641,58 @@ public class OrderTests
         Assert.True(line.HasCustomerAllergy);
     }
 
+    [Fact]
+    public void SendToKitchen_NewOrder_SendsAllLines()
+    {
+        var (_, order, _, _) = CreateClassicWithMilkyCheese();
+        var fries = new Dish("Fries", "Skin-on fries", 3.50m, Station.Fryer);
+        var friesLine = order.AddDish(fries, 1);
+
+        var docket = order.SendToKitchen();
+
+        Assert.Equal(2, docket.Count);
+        Assert.True(order.Lines.All(l => l.IsSent));
+    }
+
+    [Fact]
+    public void SendToKitchen_SentTwice_SecondReturnsEmpty()
+    {
+        var (_, order, _, _) = CreateClassicWithMilkyCheese();
+
+        var docket1 = order.SendToKitchen();
+        var docket2 = order.SendToKitchen();
+
+        Assert.Empty(docket2);
+    }
+
+    [Fact]
+    public void SendToKitchen_LineAddedAfterSend_SendsOnlyNewLine()
+    {
+        var (_, order, _, _) = CreateClassicWithMilkyCheese();
+
+        var docket = order.SendToKitchen();
+        Assert.Single(docket);
+        var fries = new Dish("Fries", "Skin-on fries", 3.50m, Station.Fryer);
+        var friesLine = order.AddDish(fries, 1);
+
+        var secondDocket = order.SendToKitchen();
+
+        var sent = Assert.Single(secondDocket);
+        Assert.Equal(friesLine, sent);
+    }
+
+    [Fact]
+    public void SendToKitchen_LineWithAllergy_RemovesUnsafeIngredients()
+    {
+        var (line, order, cheese, sauce) = CreateClassicWithMilkyCheese();
+        line.AddCustomerAllergy(Allergen.Milk);
+        
+        order.SendToKitchen();
+
+        Assert.Empty(line.UnsafeIngredients);
+        Assert.Contains(cheese, line.Removed);
+        Assert.Contains(sauce, line.Removed);
+    }
     private static (OrderLine line, Order order, Ingredient cheese, Ingredient sauce) CreateClassicWithMilkyCheese()
     {
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);

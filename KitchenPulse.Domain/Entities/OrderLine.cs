@@ -14,6 +14,7 @@ public class OrderLine
     public int Quantity { get; private set; }
     public Course Course { get; private set; }
     public bool IsDone { get; private set; }
+    public bool IsSent { get; private set; }
     public IReadOnlyCollection<Ingredient> Removed => _removed;
     public IReadOnlyCollection<Ingredient> Extras => _extras;
     public IReadOnlyCollection<Allergen> CustomerAllergies => _customerAllergies;
@@ -122,6 +123,11 @@ public class OrderLine
         IsDone = true;
     }
 
+
+    public void MarkSent()
+    {
+        IsSent = true;
+    }
 
 
 }

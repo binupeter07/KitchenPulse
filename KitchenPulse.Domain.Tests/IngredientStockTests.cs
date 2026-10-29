@@ -94,6 +94,19 @@ namespace KitchenPulse.Domain.Tests
             Assert.Empty(line.Extras);
         }
 
+        [Fact]
+        public void ApplyMovement_Waste_DecreasesStock()
+        {
+            var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+            var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+            cheese.ApplyMovement(StockMovement.Delivery(cheese, 1000m, occurredAtUtc, null));
+            var waste = StockMovement.Waste(cheese, 60m, occurredAtUtc, "W-0123");
+
+            cheese.ApplyMovement(waste);
+
+            Assert.Equal(940m, cheese.CurrentStock);
+        }
+
         private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
         {
             var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);

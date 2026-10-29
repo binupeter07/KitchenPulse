@@ -54,7 +54,7 @@ public class StockMovement
         return new StockMovement(ingredient, StockMovementType.StaffMeal, quantity, occurredAtUtc, reference);
     }
 
-    public static StockMovement StockTakeGain(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement StocktakeGain(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
         return new StockMovement(ingredient, StockMovementType.StocktakeGain, quantity, occurredAtUtc, reference);
     }

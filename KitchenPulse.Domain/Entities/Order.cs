@@ -1,5 +1,6 @@
 ﻿using KitchenPulse.Domain.Common;
 using KitchenPulse.Domain.Enums;
+using System.Collections.ObjectModel;
 
 namespace KitchenPulse.Domain.Entities;
 
@@ -84,5 +85,18 @@ public class Order
         Guard.EnumDefined(course,nameof(course));
 
         return _collectedCourses.Contains(course);
+    }
+
+    public IReadOnlyCollection<OrderLine> SendToKitchen()
+    {
+        var unsentLines = _lines.Where(l => !l.IsSent).ToList();
+
+        foreach (var line in unsentLines)
+        {
+            line.RemoveUnsafeIngredients();
+            line.MarkSent();
+        }
+
+        return unsentLines;
     }
 }

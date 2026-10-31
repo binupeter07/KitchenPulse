@@ -67,7 +67,7 @@ public class Order
     {
         Guard.EnumDefined(course, nameof(course));
 
-        if (IsCourseReady(course) )
+        if (IsCourseReady(course))
         {
             if (!_collectedCourses.Contains(course))
             {
@@ -82,7 +82,7 @@ public class Order
 
     public bool IsCourseCollected(Course course)
     {
-        Guard.EnumDefined(course,nameof(course));
+        Guard.EnumDefined(course, nameof(course));
 
         return _collectedCourses.Contains(course);
     }
@@ -98,5 +98,24 @@ public class Order
         }
 
         return unsentLines;
+    }
+
+    public IReadOnlyCollection<StockMovement> RecordSale(IReadOnlyCollection<OrderLine> docket, DateTime occurredAtUtc)
+    {
+        var movements = new List<StockMovement>();
+        var reference = $"Order {OrderNumber}";
+
+        foreach (var line in docket)
+        {
+            var lineMovement = line.CreateSaleMovements(occurredAtUtc, reference);
+            foreach (var move in lineMovement)
+            {
+                move.Ingredient.ApplyMovement(move);
+                movements.Add(move);
+            }
+        }
+
+        return movements;
+
     }
 }

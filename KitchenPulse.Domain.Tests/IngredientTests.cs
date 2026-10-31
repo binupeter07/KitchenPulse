@@ -3,6 +3,7 @@ using KitchenPulse.Domain.Entities;
 using KitchenPulse.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace KitchenPulse.Domain.Tests;
@@ -36,6 +37,17 @@ public class IngredientTests
         Assert.Equal("name", exception.ParamName);
     }
 
+    [Fact]
+    public void Constructor_UndefinedUnit_Throws()
+    {
+        var name = "Sugar";
+        var unit = (StockUnit)999;
+        var storageType = StorageType.Ambient;
+
+
+        var exception = Assert.Throws<ArgumentException>(() => new Ingredient(name, unit, storageType));
+        Assert.Equal("unit", exception.ParamName);
+    }
     [Fact]
     public void CreateIngredient_TrimmedName_ShouldTrimWhitespace()
     {
@@ -141,6 +153,7 @@ public class IngredientTests
 
         Assert.Equal("Old Name", ingredient.Name);
     }
+
 
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {

@@ -6,7 +6,7 @@ public static class Guard
     {
         if (!Enum.IsDefined(value))
         {
-            throw new ArgumentException($"Invalid {paraName}.", nameof(paraName));
+            throw new ArgumentException($"Invalid {paraName}.", paraName);
         }
 
     }

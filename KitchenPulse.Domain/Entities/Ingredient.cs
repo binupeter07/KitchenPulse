@@ -14,12 +14,12 @@ public class Ingredient
     public IReadOnlyCollection<Allergen> Allergens => _allergens;
     public decimal CurrentStock { get; private set; }
     public decimal ExtraPortion { get; private set; }
-
     public bool IsStockBelowZero => CurrentStock < 0;
+
     public Ingredient(string name, StockUnit unit, StorageType storageType)
     {
-
         ValidateName(name);
+        Guard.EnumDefined(unit, nameof(unit));
         Guard.EnumDefined(storageType, nameof(storageType));
 
         Id = Guid.NewGuid();
@@ -30,7 +30,6 @@ public class Ingredient
 
     public void AddAllergen(Allergen allergen)
     {
-
         Guard.EnumDefined(allergen, nameof(allergen));
 
         if (!_allergens.Contains(allergen))
@@ -41,9 +40,7 @@ public class Ingredient
 
     public void RemoveAllergen(Allergen allergen)
     {
-
         _allergens.Remove(allergen);
-
     }
 
     public void ApplyMovement(StockMovement movement)
@@ -52,8 +49,9 @@ public class Ingredient
 
         if (movement.Ingredient.Id != Id)
         {
-            throw new ArgumentException("Ingredient is not matching", nameof(movement));
+            throw new ArgumentException("Movement belongs to a different ingredient.", nameof(movement));
         }
+
         CurrentStock += movement.Change;
     }
 
@@ -61,8 +59,9 @@ public class Ingredient
     {
         if (amount <= 0)
         {
-            throw new ArgumentException("Extra should be greater than zero", nameof(amount));
+            throw new ArgumentException("Extra portion must be greater than zero.", nameof(amount));
         }
+
         ExtraPortion = amount;
     }
 
@@ -80,6 +79,4 @@ public class Ingredient
             throw new ArgumentException("Ingredient name cannot be null or blank.", nameof(name));
         }
     }
-
-
 }

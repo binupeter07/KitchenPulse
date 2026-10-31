@@ -645,7 +645,7 @@ public class OrderTests
     {
         var (_, order, _, _) = CreateClassicWithMilkyCheese();
         var fries = new Dish("Fries", "Skin-on fries", 3.50m, Station.Fryer);
-        var friesLine = order.AddDish(fries, 1);
+        order.AddDish(fries, 1);
 
         var docket = order.SendToKitchen();
 
@@ -657,20 +657,18 @@ public class OrderTests
     public void SendToKitchen_SentTwice_SecondReturnsEmpty()
     {
         var (_, order, _, _) = CreateClassicWithMilkyCheese();
+        order.SendToKitchen();
 
-        var docket1 = order.SendToKitchen();
-        var docket2 = order.SendToKitchen();
+        var secondDocket = order.SendToKitchen();
 
-        Assert.Empty(docket2);
+        Assert.Empty(secondDocket);
     }
 
     [Fact]
     public void SendToKitchen_LineAddedAfterSend_SendsOnlyNewLine()
     {
         var (_, order, _, _) = CreateClassicWithMilkyCheese();
-
-        var docket = order.SendToKitchen();
-        Assert.Single(docket);
+        order.SendToKitchen();
         var fries = new Dish("Fries", "Skin-on fries", 3.50m, Station.Fryer);
         var friesLine = order.AddDish(fries, 1);
 
@@ -721,7 +719,7 @@ public class OrderTests
     [Fact]
     public void CreateSaleMovements_IngredientRemoved_NoMovementForIt()
     {
-        var (line, _, cheese, sauce) = CreateClassicWithMilkyCheese();
+        var (line, _, cheese, _) = CreateClassicWithMilkyCheese();
         line.RemoveIngredient(cheese);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
@@ -729,7 +727,6 @@ public class OrderTests
 
         Assert.DoesNotContain(movements, m => m.Ingredient == cheese);
         Assert.Equal(2, movements.Count);
-
     }
 
     [Fact]
@@ -753,18 +750,15 @@ public class OrderTests
     {
         var (_, order, cheese, sauce) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-
-        var cheeseMovement = StockMovement.Delivery(cheese, 60m, occurredAtUtc, "Delivery-001");
-        cheese.ApplyMovement(cheeseMovement);
-        var sauceMovement = StockMovement.Delivery(sauce, 10000m, occurredAtUtc, "Delivery-001");
-        sauce.ApplyMovement(sauceMovement);
+        cheese.ApplyMovement(StockMovement.Delivery(cheese, 60m, occurredAtUtc, "Delivery-001"));
+        sauce.ApplyMovement(StockMovement.Delivery(sauce, 10000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
         var movements = order.RecordSale(docket, occurredAtUtc);
 
+        Assert.Equal(3, movements.Count);
         Assert.Equal(59m, cheese.CurrentStock);
         Assert.Equal(9970m, sauce.CurrentStock);
-        Assert.Equal(3, movements.Count);
     }
 
     [Fact]
@@ -825,6 +819,7 @@ public class OrderTests
         Assert.Equal(750m, fries.CurrentStock);
         Assert.Equal(9970m, sauce.CurrentStock);
     }
+
     private static (OrderLine line, Order order, Ingredient cheese, Ingredient sauce) CreateClassicWithMilkyCheese()
     {
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);

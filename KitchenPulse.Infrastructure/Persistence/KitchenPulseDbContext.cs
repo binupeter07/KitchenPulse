@@ -12,4 +12,9 @@ public class KitchenPulseDbContext : DbContext
     }
 
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(KitchenPulseDbContext).Assembly);
+    }
 }

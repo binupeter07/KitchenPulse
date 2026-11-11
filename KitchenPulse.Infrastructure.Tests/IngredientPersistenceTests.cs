@@ -84,7 +84,6 @@ public class IngredientPersistenceTests
         await testDatabase.InitializeAsync();
         await using var context = testDatabase.CreateContext();
 
-
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
         context.Ingredients.Add(cheese);
         await context.SaveChangesAsync();

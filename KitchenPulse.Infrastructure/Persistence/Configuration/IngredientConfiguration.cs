@@ -28,5 +28,16 @@ public class IngredientConfiguration : IEntityTypeConfiguration<Ingredient>
 
         builder.Property(i => i.ExtraPortion)
                 .HasPrecision(18, 3);
+
+        builder.OwnsMany<IngredientAllergen>("_allergens", allergenBuilder =>
+        {
+            allergenBuilder.ToTable("IngredientAllergens");
+            allergenBuilder.WithOwner().HasForeignKey("IngredientId");
+            allergenBuilder.HasKey("IngredientId", "Allergen");
+            allergenBuilder.Property(i => i.Allergen).HasColumnName("AllergenId").HasConversion<short>();
+
+        });
+        builder.Ignore(i=> i.Allergens);
+
     }
 }

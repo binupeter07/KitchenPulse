@@ -3,5 +3,6 @@
   <Project Path="KitchenPulse.Application/KitchenPulse.Application.csproj" />
   <Project Path="KitchenPulse.Domain.Tests/KitchenPulse.Domain.Tests.csproj" />
   <Project Path="KitchenPulse.Domain/KitchenPulse.Domain.csproj" />
+  <Project Path="KitchenPulse.Infrastructure.Tests/KitchenPulse.Infrastructure.Tests.csproj" Id="80fe0ce8-eec3-4a04-8219-d35be987d23b" />
   <Project Path="KitchenPulse.Infrastructure/KitchenPulse.Infrastructure.csproj" />
 </Solution>

@@ -5,13 +5,13 @@ namespace KitchenPulse.Domain.Entities;
 
 public class Ingredient
 {
-    private readonly List<Allergen> _allergens = new();
+    private readonly List<IngredientAllergen> _allergens = new();
 
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public StockUnit Unit { get; private set; }
     public StorageType StorageType { get; private set; }
-    public IReadOnlyCollection<Allergen> Allergens => _allergens;
+    public IReadOnlyCollection<Allergen> Allergens => _allergens.Select(a => a.Allergen).ToArray();
     public decimal CurrentStock { get; private set; }
     public decimal ExtraPortion { get; private set; }
     public bool IsStockBelowZero => CurrentStock < 0;
@@ -32,15 +32,23 @@ public class Ingredient
     {
         Guard.EnumDefined(allergen, nameof(allergen));
 
-        if (!_allergens.Contains(allergen))
+        bool alreadyExists = _allergens.Any(a => a.Allergen == allergen);
+
+        if (!alreadyExists)
         {
-            _allergens.Add(allergen);
+            var ingredientAllergen = new IngredientAllergen(allergen);
+            _allergens.Add(ingredientAllergen);
         }
     }
 
     public void RemoveAllergen(Allergen allergen)
     {
-        _allergens.Remove(allergen);
+        Guard.EnumDefined(allergen, nameof(allergen));
+        var ingredientAllergen = _allergens.FirstOrDefault(a => a.Allergen == allergen);
+        if (ingredientAllergen != null)
+        {
+            _allergens.Remove(ingredientAllergen);
+        }
     }
 
     public void ApplyMovement(StockMovement movement)

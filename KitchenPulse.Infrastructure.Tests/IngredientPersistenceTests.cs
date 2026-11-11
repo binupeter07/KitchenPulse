@@ -71,10 +71,8 @@ public class IngredientPersistenceTests
             Assert.Equal(cheese.Id, savedIngredient.Id);
             Assert.Equal("Cheese slice", savedIngredient.Name);
             Assert.DoesNotContain(Allergen.Milk, savedIngredient.Allergens);
+            Assert.Contains(Allergen.Eggs, savedIngredient.Allergens);
         }
-
-
-
 
     }
 

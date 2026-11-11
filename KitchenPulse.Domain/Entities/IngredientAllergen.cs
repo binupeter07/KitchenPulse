@@ -5,7 +5,6 @@ namespace KitchenPulse.Domain.Entities;
 
 public sealed class IngredientAllergen
 {
-
     public Allergen Allergen { get; private set; }
 
     internal IngredientAllergen(Allergen allergen)

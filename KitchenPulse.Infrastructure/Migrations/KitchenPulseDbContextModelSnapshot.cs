@@ -69,7 +69,12 @@ namespace KitchenPulse.Infrastructure.Migrations
 
                             b1.HasKey("IngredientId", "Allergen");
 
-                            b1.ToTable("IngredientAllergens", (string)null);
+                            b1.HasIndex("Allergen");
+
+                            b1.ToTable("IngredientAllergens", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_IngredientAllergens_AllergenId", "[AllergenId] BETWEEN 1 AND 14");
+                                });
 
                             b1.WithOwner()
                                 .HasForeignKey("IngredientId");

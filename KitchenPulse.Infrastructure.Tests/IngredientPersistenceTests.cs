@@ -1,5 +1,6 @@
 ﻿using KitchenPulse.Domain.Entities;
 using KitchenPulse.Domain.Enums;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace KitchenPulse.Infrastructure.Tests;
@@ -76,5 +77,24 @@ public class IngredientPersistenceTests
 
     }
 
+    [Fact]
+    public async Task IngredientAllergen_InvalidAllergenId_IsRejectedByDatabase()
+    {
+        await using var testDatabase = new TestDatabase();
+        await testDatabase.InitializeAsync();
+        await using var context = testDatabase.CreateContext();
+
+
+        var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+        context.Ingredients.Add(cheese);
+        await context.SaveChangesAsync();
+
+        var exception = await Assert.ThrowsAsync<SqlException>(() =>
+            context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO IngredientAllergens (IngredientId, AllergenId) VALUES ({cheese.Id}, {99})")
+        );
+
+        Assert.Contains("CK_IngredientAllergens_AllergenId", exception.Message);
+    }
 
 }

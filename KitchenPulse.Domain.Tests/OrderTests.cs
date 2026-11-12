@@ -5,6 +5,8 @@ namespace KitchenPulse.Domain.Tests;
 
 public class OrderTests
 {
+    private static readonly Guid SiteId = Guid.CreateVersion7();
+
     [Fact]
     public void Constructor_ValidValues_SetsProperties()
     {
@@ -697,7 +699,7 @@ public class OrderTests
         var (line, _, _, _) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = line.CreateSaleMovements(occurredAtUtc, "Order 1043");
+        var movements = line.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
 
         Assert.Equal(3, movements.Count);
         Assert.True(movements.All(m => m.Type == StockMovementType.Sale));
@@ -710,7 +712,7 @@ public class OrderTests
         var twoClassics = order.AddDish(line.Dish, 2);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = twoClassics.CreateSaleMovements(occurredAtUtc, "Order 1043");
+        var movements = twoClassics.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
 
         var sauceMovement = movements.Single(m => m.Ingredient == sauce);
         Assert.Equal(60m, sauceMovement.Quantity);
@@ -723,7 +725,7 @@ public class OrderTests
         line.RemoveIngredient(cheese);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = line.CreateSaleMovements(occurredAtUtc, "Order 1043");
+        var movements = line.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
 
         Assert.DoesNotContain(movements, m => m.Ingredient == cheese);
         Assert.Equal(2, movements.Count);
@@ -739,7 +741,7 @@ public class OrderTests
         twoClassics.AddExtra(bacon);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = twoClassics.CreateSaleMovements(occurredAtUtc, "Order 1043");
+        var movements = twoClassics.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
 
         var baconMovement = movements.Single(m => m.Ingredient == bacon);
         Assert.Equal(4m, baconMovement.Quantity);
@@ -750,11 +752,11 @@ public class OrderTests
     {
         var (_, order, cheese, sauce) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        cheese.ApplyMovement(StockMovement.Delivery(cheese, 60m, occurredAtUtc, "Delivery-001"));
-        sauce.ApplyMovement(StockMovement.Delivery(sauce, 10000m, occurredAtUtc, "Delivery-001"));
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 60m, occurredAtUtc, "Delivery-001"));
+        sauce.ApplyMovement(StockMovement.Delivery(SiteId,sauce, 10000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
-        var movements = order.RecordSale(docket, occurredAtUtc);
+        var movements = order.RecordSale(SiteId,docket, occurredAtUtc);
 
         Assert.Equal(3, movements.Count);
         Assert.Equal(59m, cheese.CurrentStock);
@@ -770,12 +772,12 @@ public class OrderTests
         var friesDish = new Dish("Fries", "Spicy fries", 5.60m, Station.Fryer);
         friesDish.AddIngredient(fries, 250m);
         order.AddDish(friesDish, 1);
-        cheese.ApplyMovement(StockMovement.Delivery(cheese, 60m, occurredAtUtc, "Delivery-001"));
-        sauce.ApplyMovement(StockMovement.Delivery(sauce, 10000m, occurredAtUtc, "Delivery-001"));
-        fries.ApplyMovement(StockMovement.Delivery(fries, 1000m, occurredAtUtc, "Delivery-001"));
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 60m, occurredAtUtc, "Delivery-001"));
+        sauce.ApplyMovement(StockMovement.Delivery(SiteId,sauce, 10000m, occurredAtUtc, "Delivery-001"));
+        fries.ApplyMovement(StockMovement.Delivery(SiteId,fries, 1000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
-        var movements = order.RecordSale(docket, occurredAtUtc);
+        var movements = order.RecordSale(SiteId,docket, occurredAtUtc);
 
         Assert.Equal(4, movements.Count);
         Assert.Equal(59m, cheese.CurrentStock);
@@ -789,11 +791,11 @@ public class OrderTests
         var (line, order, cheese, sauce) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         line.RemoveIngredient(cheese);
-        cheese.ApplyMovement(StockMovement.Delivery(cheese, 60m, occurredAtUtc, "Delivery-001"));
-        sauce.ApplyMovement(StockMovement.Delivery(sauce, 10000m, occurredAtUtc, "Delivery-001"));
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 60m, occurredAtUtc, "Delivery-001"));
+        sauce.ApplyMovement(StockMovement.Delivery(SiteId, sauce, 10000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
-        var movements = order.RecordSale(docket, occurredAtUtc);
+        var movements = order.RecordSale(SiteId, docket, occurredAtUtc);
 
         Assert.Equal(2, movements.Count);
         Assert.Equal(60m, cheese.CurrentStock);
@@ -808,12 +810,12 @@ public class OrderTests
         var fries = new Ingredient("Fries", StockUnit.Gram, StorageType.Frozen);
         var friesDish = new Dish("Fries", "Spicy fries", 5.60m, Station.Fryer);
         friesDish.AddIngredient(fries, 250m);
-        sauce.ApplyMovement(StockMovement.Delivery(sauce, 10000m, occurredAtUtc, "Delivery-001"));
-        fries.ApplyMovement(StockMovement.Delivery(fries, 1000m, occurredAtUtc, "Delivery-001"));
-        order.RecordSale(order.SendToKitchen(), occurredAtUtc);
+        sauce.ApplyMovement(StockMovement.Delivery(SiteId, sauce, 10000m, occurredAtUtc, "Delivery-001"));
+        fries.ApplyMovement(StockMovement.Delivery(SiteId, fries, 1000m, occurredAtUtc, "Delivery-001"));
+        order.RecordSale(SiteId, order.SendToKitchen(), occurredAtUtc);
         order.AddDish(friesDish, 1);
 
-        var secondMovements = order.RecordSale(order.SendToKitchen(), occurredAtUtc);
+        var secondMovements = order.RecordSale(SiteId, order.SendToKitchen(), occurredAtUtc);
 
         Assert.Single(secondMovements);
         Assert.Equal(750m, fries.CurrentStock);

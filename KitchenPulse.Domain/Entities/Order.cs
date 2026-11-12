@@ -100,14 +100,14 @@ public class Order
         return unsentLines;
     }
 
-    public IReadOnlyCollection<StockMovement> RecordSale(IReadOnlyCollection<OrderLine> docket, DateTime occurredAtUtc)
+    public IReadOnlyCollection<StockMovement> RecordSale(Guid siteId, IReadOnlyCollection<OrderLine> docket, DateTime occurredAtUtc)
     {
         var movements = new List<StockMovement>();
         var reference = $"Order {OrderNumber}";
 
         foreach (var line in docket)
         {
-            var lineMovement = line.CreateSaleMovements(occurredAtUtc, reference);
+            var lineMovement = line.CreateSaleMovements(siteId, occurredAtUtc, reference);
             foreach (var move in lineMovement)
             {
                 move.Ingredient.ApplyMovement(move);

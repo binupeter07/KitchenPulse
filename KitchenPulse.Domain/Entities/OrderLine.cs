@@ -129,7 +129,7 @@ public class OrderLine
         IsSent = true;
     }
 
-    public IReadOnlyCollection<StockMovement> CreateSaleMovements(DateTime occurredAtUtc, string? reference)
+    public IReadOnlyCollection<StockMovement> CreateSaleMovements(Guid siteId, DateTime occurredAtUtc, string? reference)
     {
         var movements = new List<StockMovement>();
 
@@ -138,14 +138,14 @@ public class OrderLine
             if (!_removed.Contains(recipeLine.Ingredient))
             {
                 var amount = recipeLine.Quantity * Quantity;
-                movements.Add(StockMovement.Sale(recipeLine.Ingredient, amount, occurredAtUtc, reference));
+                movements.Add(StockMovement.Sale(siteId, recipeLine.Ingredient, amount, occurredAtUtc, reference));
             }
         }
 
         foreach (var extra in _extras)
         {
             var amount = extra.ExtraPortion * Quantity;
-            movements.Add(StockMovement.Sale(extra, amount, occurredAtUtc, reference));
+            movements.Add(StockMovement.Sale(siteId, extra, amount, occurredAtUtc, reference));
         }
 
         return movements;

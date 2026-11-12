@@ -5,11 +5,12 @@ namespace KitchenPulse.Domain.Tests;
 
 public class IngredientStockTests
 {
+    private static readonly Guid SiteId = Guid.CreateVersion7();
     [Fact]
     public void ApplyMovement_Delivery_IncreasesStock()
     {
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
-        var delivery = StockMovement.Delivery(beef, 40m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "D071");
+        var delivery = StockMovement.Delivery(SiteId,beef, 40m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "D071");
 
         beef.ApplyMovement(delivery);
 
@@ -20,8 +21,8 @@ public class IngredientStockTests
     public void ApplyMovement_Sale_DecreasesStock()
     {
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
-        var delivery = StockMovement.Delivery(beef, 40m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "D071");
-        var sale = StockMovement.Sale(beef, 1m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "S071");
+        var delivery = StockMovement.Delivery(SiteId,beef, 40m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "D071");
+        var sale = StockMovement.Sale(SiteId,beef, 1m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "S071");
 
         beef.ApplyMovement(delivery);
         beef.ApplyMovement(sale);
@@ -34,8 +35,8 @@ public class IngredientStockTests
     {
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
-        cheese.ApplyMovement(StockMovement.Delivery(cheese, 1000m, occurredAtUtc, null));
-        var waste = StockMovement.Waste(cheese, 60m, occurredAtUtc, "W-0123");
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 1000m, occurredAtUtc, null));
+        var waste = StockMovement.Waste(SiteId,cheese, 60m, occurredAtUtc, "W-0123");
 
         cheese.ApplyMovement(waste);
 
@@ -47,7 +48,7 @@ public class IngredientStockTests
     {
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
-        var sale = StockMovement.Sale(cheese, 1m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "S071");
+        var sale = StockMovement.Sale(SiteId,cheese, 1m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "S071");
 
         Assert.Throws<ArgumentException>(() => beef.ApplyMovement(sale));
 
@@ -58,7 +59,7 @@ public class IngredientStockTests
     public void ApplyMovement_SaleWithNoStock_GoesBelowZeroAndFlags()
     {
         var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
-        var sale = StockMovement.Sale(beef, 1m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "S071");
+        var sale = StockMovement.Sale(SiteId,beef, 1m, new DateTime(2026, 10, 26, 10, 0, 0, DateTimeKind.Utc), "S071");
 
         beef.ApplyMovement(sale);
 

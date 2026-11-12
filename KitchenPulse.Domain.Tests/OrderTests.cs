@@ -14,12 +14,13 @@ public class OrderTests
         var table = "8";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var order = new Order(orderNumber, table, placedAtUtc);
+        var order = new Order(SiteId, orderNumber, table, placedAtUtc);
 
         Assert.NotEqual(Guid.Empty, order.Id);
         Assert.Equal(1043, order.OrderNumber);
         Assert.Equal("8", order.Table);
         Assert.Equal(placedAtUtc, order.PlacedAtUtc);
+        Assert.Equal(SiteId, order.SiteId);
     }
 
     [Fact]
@@ -29,7 +30,7 @@ public class OrderTests
         var table = "8";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var exception = Assert.Throws<ArgumentException>(() => new Order(orderNumber, table, placedAtUtc));
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, orderNumber, table, placedAtUtc));
 
         Assert.Equal("orderNumber", exception.ParamName);
     }
@@ -41,7 +42,7 @@ public class OrderTests
         var table = "";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var exception = Assert.Throws<ArgumentException>(() => new Order(orderNumber, table, placedAtUtc));
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, orderNumber, table, placedAtUtc));
 
         Assert.Equal("table", exception.ParamName);
     }
@@ -53,19 +54,30 @@ public class OrderTests
         var table = " 8    ";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var order = new Order(orderNumber, table, placedAtUtc);
+        var order = new Order(SiteId, orderNumber, table, placedAtUtc);
 
         Assert.NotEqual(Guid.Empty, order.Id);
         Assert.Equal(142, order.OrderNumber);
         Assert.Equal("8", order.Table);
         Assert.Equal(placedAtUtc, order.PlacedAtUtc);
     }
+    [Fact]
+    public void Constructor_EmptySiteId_Throws()
+    {
+        var orderNumber = 142;
+        var table = "8";
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentException>(() => new Order(Guid.Empty, orderNumber, table, placedAtUtc));
+
+        Assert.Equal("siteId", exception.ParamName);
+    }
 
     [Fact]
     public void AddDish_NewDish_AddsLine()
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
 
         order.AddDish(classic, 2);
@@ -79,7 +91,7 @@ public class OrderTests
     public void AddDish_SameDishTwice_AddsTwoLines()
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
 
         order.AddDish(classic, 2);
@@ -92,7 +104,7 @@ public class OrderTests
     public void AddDish_ZeroQuantity_ThrowsArgumentException()
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
 
         var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 0));
@@ -105,7 +117,7 @@ public class OrderTests
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(cheese, 1);
         var line = order.AddDish(classic, 1);
@@ -123,7 +135,7 @@ public class OrderTests
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(cheese, 1);
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
 
         // Act
         var line = order.AddDish(classic, 1, [cheese]);
@@ -140,7 +152,7 @@ public class OrderTests
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(beef, 1);
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
 
         var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 1, [cheese]));
 
@@ -699,7 +711,7 @@ public class OrderTests
         var (line, _, _, _) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = line.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
+        var movements = line.CreateSaleMovements(SiteId, occurredAtUtc, "Order 1043");
 
         Assert.Equal(3, movements.Count);
         Assert.True(movements.All(m => m.Type == StockMovementType.Sale));
@@ -712,7 +724,7 @@ public class OrderTests
         var twoClassics = order.AddDish(line.Dish, 2);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = twoClassics.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
+        var movements = twoClassics.CreateSaleMovements(SiteId, occurredAtUtc, "Order 1043");
 
         var sauceMovement = movements.Single(m => m.Ingredient == sauce);
         Assert.Equal(60m, sauceMovement.Quantity);
@@ -725,7 +737,7 @@ public class OrderTests
         line.RemoveIngredient(cheese);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = line.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
+        var movements = line.CreateSaleMovements(SiteId, occurredAtUtc, "Order 1043");
 
         Assert.DoesNotContain(movements, m => m.Ingredient == cheese);
         Assert.Equal(2, movements.Count);
@@ -741,7 +753,7 @@ public class OrderTests
         twoClassics.AddExtra(bacon);
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var movements = twoClassics.CreateSaleMovements(SiteId,occurredAtUtc, "Order 1043");
+        var movements = twoClassics.CreateSaleMovements(SiteId, occurredAtUtc, "Order 1043");
 
         var baconMovement = movements.Single(m => m.Ingredient == bacon);
         Assert.Equal(4m, baconMovement.Quantity);
@@ -752,15 +764,28 @@ public class OrderTests
     {
         var (_, order, cheese, sauce) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 60m, occurredAtUtc, "Delivery-001"));
-        sauce.ApplyMovement(StockMovement.Delivery(SiteId,sauce, 10000m, occurredAtUtc, "Delivery-001"));
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId, cheese, 60m, occurredAtUtc, "Delivery-001"));
+        sauce.ApplyMovement(StockMovement.Delivery(SiteId, sauce, 10000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
-        var movements = order.RecordSale(SiteId,docket, occurredAtUtc);
+        var movements = order.RecordSale( docket, occurredAtUtc);
 
         Assert.Equal(3, movements.Count);
         Assert.Equal(59m, cheese.CurrentStock);
         Assert.Equal(9970m, sauce.CurrentStock);
+    }
+
+    [Fact]
+    public void RecordSale_Order_MovementsUseOrdersSite()
+    {
+        var (_, order, cheese, sauce) = CreateClassicWithMilkyCheese();
+        var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var docket = order.SendToKitchen();
+        var movements = order.RecordSale(docket, occurredAtUtc);
+
+        Assert.NotEmpty(movements);
+        Assert.True(movements.All(m=> m.SiteId == order.SiteId));
     }
 
     [Fact]
@@ -772,12 +797,12 @@ public class OrderTests
         var friesDish = new Dish("Fries", "Spicy fries", 5.60m, Station.Fryer);
         friesDish.AddIngredient(fries, 250m);
         order.AddDish(friesDish, 1);
-        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 60m, occurredAtUtc, "Delivery-001"));
-        sauce.ApplyMovement(StockMovement.Delivery(SiteId,sauce, 10000m, occurredAtUtc, "Delivery-001"));
-        fries.ApplyMovement(StockMovement.Delivery(SiteId,fries, 1000m, occurredAtUtc, "Delivery-001"));
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId, cheese, 60m, occurredAtUtc, "Delivery-001"));
+        sauce.ApplyMovement(StockMovement.Delivery(SiteId, sauce, 10000m, occurredAtUtc, "Delivery-001"));
+        fries.ApplyMovement(StockMovement.Delivery(SiteId, fries, 1000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
-        var movements = order.RecordSale(SiteId,docket, occurredAtUtc);
+        var movements = order.RecordSale( docket, occurredAtUtc);
 
         Assert.Equal(4, movements.Count);
         Assert.Equal(59m, cheese.CurrentStock);
@@ -791,11 +816,11 @@ public class OrderTests
         var (line, order, cheese, sauce) = CreateClassicWithMilkyCheese();
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         line.RemoveIngredient(cheese);
-        cheese.ApplyMovement(StockMovement.Delivery(SiteId,cheese, 60m, occurredAtUtc, "Delivery-001"));
+        cheese.ApplyMovement(StockMovement.Delivery(SiteId, cheese, 60m, occurredAtUtc, "Delivery-001"));
         sauce.ApplyMovement(StockMovement.Delivery(SiteId, sauce, 10000m, occurredAtUtc, "Delivery-001"));
 
         var docket = order.SendToKitchen();
-        var movements = order.RecordSale(SiteId, docket, occurredAtUtc);
+        var movements = order.RecordSale(docket, occurredAtUtc);
 
         Assert.Equal(2, movements.Count);
         Assert.Equal(60m, cheese.CurrentStock);
@@ -812,10 +837,10 @@ public class OrderTests
         friesDish.AddIngredient(fries, 250m);
         sauce.ApplyMovement(StockMovement.Delivery(SiteId, sauce, 10000m, occurredAtUtc, "Delivery-001"));
         fries.ApplyMovement(StockMovement.Delivery(SiteId, fries, 1000m, occurredAtUtc, "Delivery-001"));
-        order.RecordSale(SiteId, order.SendToKitchen(), occurredAtUtc);
+        order.RecordSale( order.SendToKitchen(), occurredAtUtc);
         order.AddDish(friesDish, 1);
 
-        var secondMovements = order.RecordSale(SiteId, order.SendToKitchen(), occurredAtUtc);
+        var secondMovements = order.RecordSale( order.SendToKitchen(), occurredAtUtc);
 
         Assert.Single(secondMovements);
         Assert.Equal(750m, fries.CurrentStock);
@@ -841,7 +866,7 @@ public class OrderTests
         classic.AddIngredient(sauce, 30m);
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc);
         var line = order.AddDish(classic, 1);
 
         return (line, order, cheese, sauce);

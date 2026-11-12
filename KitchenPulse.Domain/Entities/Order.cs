@@ -11,6 +11,7 @@ public class Order
     private readonly List<Course> _collectedCourses = new();
 
     public Guid Id { get; private set; }
+    public Guid SiteId { get; private set;  }
     public int OrderNumber { get; private set; }
     public string Table { get; private set; }
     public DateTime PlacedAtUtc { get; private set; }
@@ -20,7 +21,7 @@ public class Order
     public IReadOnlyCollection<OrderLine> Lines => _lines;
     public IReadOnlyCollection<Course> CollectedCourse => _collectedCourses;
     public bool IsMainsOnHold => _lines.Any(l => l.Course == Course.Starter) && !IsCourseCollected(Course.Starter);
-    public Order(int orderNumber, string table, DateTime placedAtUtc)
+    public Order(Guid siteId, int orderNumber, string table, DateTime placedAtUtc)
     {
 
         if (string.IsNullOrWhiteSpace(table))
@@ -32,7 +33,13 @@ public class Order
             throw new ArgumentException("Order number must be greater than zero.", nameof(orderNumber));
         }
 
+        if (siteId == Guid.Empty)
+        {
+            throw new ArgumentException("SiteId cannot be empty", nameof(siteId));
+        }
+
         Id = Guid.NewGuid();
+        SiteId = siteId;
         OrderNumber = orderNumber;
         Table = table.Trim();
         PlacedAtUtc = placedAtUtc;
@@ -100,14 +107,14 @@ public class Order
         return unsentLines;
     }
 
-    public IReadOnlyCollection<StockMovement> RecordSale(Guid siteId, IReadOnlyCollection<OrderLine> docket, DateTime occurredAtUtc)
+    public IReadOnlyCollection<StockMovement> RecordSale(IReadOnlyCollection<OrderLine> docket, DateTime occurredAtUtc)
     {
         var movements = new List<StockMovement>();
         var reference = $"Order {OrderNumber}";
 
         foreach (var line in docket)
         {
-            var lineMovement = line.CreateSaleMovements(siteId, occurredAtUtc, reference);
+            var lineMovement = line.CreateSaleMovements( SiteId,occurredAtUtc, reference);
             foreach (var move in lineMovement)
             {
                 move.Ingredient.ApplyMovement(move);

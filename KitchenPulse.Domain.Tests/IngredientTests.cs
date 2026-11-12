@@ -10,6 +10,7 @@ namespace KitchenPulse.Domain.Tests;
 
 public class IngredientTests
 {
+    private static readonly Guid SiteId = Guid.CreateVersion7();
     [Fact]
     public void CreateIngredient_ValidParameters_ShouldCreateIngredient()
     {
@@ -169,7 +170,7 @@ public class IngredientTests
         cheese.AddAllergen(Allergen.Milk);
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId,1043, "8", placedAtUtc);
         var line = order.AddDish(classic, 1);
 
         return (line, order, cheese);

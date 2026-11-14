@@ -28,10 +28,6 @@ namespace KitchenPulse.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("CurrentStock")
-                        .HasPrecision(18, 3)
-                        .HasColumnType("decimal(18,3)");
-
                     b.Property<decimal>("ExtraPortion")
                         .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");

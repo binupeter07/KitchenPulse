@@ -12,9 +12,7 @@ public class Ingredient
     public StockUnit Unit { get; private set; }
     public StorageType StorageType { get; private set; }
     public IReadOnlyCollection<Allergen> Allergens => _allergens.Select(a => a.Allergen).ToArray();
-    public decimal CurrentStock { get; private set; }
     public decimal ExtraPortion { get; private set; }
-    public bool IsStockBelowZero => CurrentStock < 0;
 
     public Ingredient(string name, StockUnit unit, StorageType storageType)
     {
@@ -49,18 +47,6 @@ public class Ingredient
         {
             _allergens.Remove(ingredientAllergen);
         }
-    }
-
-    public void ApplyMovement(StockMovement movement)
-    {
-        ArgumentNullException.ThrowIfNull(movement);
-
-        if (movement.Ingredient.Id != Id)
-        {
-            throw new ArgumentException("Movement belongs to a different ingredient.", nameof(movement));
-        }
-
-        CurrentStock += movement.Change;
     }
 
     public void SetExtraPortion(decimal amount)

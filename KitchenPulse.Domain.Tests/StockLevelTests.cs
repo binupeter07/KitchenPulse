@@ -70,6 +70,18 @@ public class StockLevelTests
     }
 
     [Fact]
+    public void Apply_Waste_DecreasesQuantity()
+    {
+        var cheese = CreateCheese();
+        var level = CreateLevelFor(cheese);
+        level.Apply(StockMovement.Delivery(SiteId, cheese, 1000m, OccurredAtUtc, null));
+
+        level.Apply(StockMovement.Waste(SiteId, cheese, 60m, OccurredAtUtc, "W-0123"));
+
+        Assert.Equal(940m, level.Quantity);
+    }
+
+    [Fact]
     public void Apply_SaleMoreThanStock_SetsIsStockBelowZero()
     {
         var cheese = CreateCheese();

@@ -5,15 +5,15 @@
         public Guid Id { get; private set; }
         public string Name { get; private set; }
 
-        public Site(string siteName)
+        public Site(string name)
         {
-            if (string.IsNullOrWhiteSpace(siteName))
+            if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("Site Name cannot be blank", nameof(siteName));
+                throw new ArgumentException("Site Name cannot be blank", nameof(name));
             }
 
             Id = Guid.NewGuid();
-            Name = siteName.Trim();
+            Name = name.Trim();
         }
     }
 }

@@ -52,6 +52,49 @@ namespace KitchenPulse.Infrastructure.Migrations
                     b.ToTable("Ingredients");
                 });
 
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.Site", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Sites", (string)null);
+                });
+
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.StockLevel", b =>
+                {
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IngredientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("SiteId", "IngredientId");
+
+                    b.HasIndex("IngredientId");
+
+                    b.ToTable("StockLevels", (string)null);
+                });
+
             modelBuilder.Entity("KitchenPulse.Domain.Entities.Ingredient", b =>
                 {
                     b.OwnsMany("KitchenPulse.Domain.Entities.IngredientAllergen", "_allergens", b1 =>
@@ -77,6 +120,21 @@ namespace KitchenPulse.Infrastructure.Migrations
                         });
 
                     b.Navigation("_allergens");
+                });
+
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.StockLevel", b =>
+                {
+                    b.HasOne("KitchenPulse.Domain.Entities.Ingredient", null)
+                        .WithMany()
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KitchenPulse.Domain.Entities.Site", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

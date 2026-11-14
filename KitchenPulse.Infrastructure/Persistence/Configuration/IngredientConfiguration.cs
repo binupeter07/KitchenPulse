@@ -24,9 +24,6 @@ public class IngredientConfiguration : IEntityTypeConfiguration<Ingredient>
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
-        builder.Property(i => i.CurrentStock)
-                .HasPrecision(18, 3);
-
         builder.Property(i => i.ExtraPortion)
                 .HasPrecision(18, 3);
 

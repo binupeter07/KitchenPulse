@@ -10,6 +10,7 @@ namespace KitchenPulse.Domain.Tests;
 
 public class IngredientTests
 {
+    private static readonly Guid SiteId = Guid.CreateVersion7();
     [Fact]
     public void CreateIngredient_ValidParameters_ShouldCreateIngredient()
     {
@@ -154,6 +155,35 @@ public class IngredientTests
         Assert.Equal("Old Name", ingredient.Name);
     }
 
+    [Fact]
+    public void NewIngredient_ExtraPortion_IsZero()
+    {
+        var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+
+        Assert.Equal(0m, bacon.ExtraPortion);
+    }
+
+    [Fact]
+    public void SetExtraPortion_Positive_SetsIt()
+    {
+        var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+
+        bacon.SetExtraPortion(30m);
+
+        Assert.Equal(30m, bacon.ExtraPortion);
+    }
+
+    [Fact]
+    public void SetExtraPortion_Zero_Throws()
+    {
+        var bacon = new Ingredient("Bacon", StockUnit.Gram, StorageType.Chilled);
+
+        var exception = Assert.Throws<ArgumentException>(() => bacon.SetExtraPortion(0m));
+
+        Assert.Equal("amount", exception.ParamName);
+        Assert.Equal(0m, bacon.ExtraPortion);
+    }
+
 
     private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
     {
@@ -169,7 +199,7 @@ public class IngredientTests
         cheese.AddAllergen(Allergen.Milk);
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(1043, "8", placedAtUtc);
+        var order = new Order(SiteId,1043, "8", placedAtUtc);
         var line = order.AddDish(classic, 1);
 
         return (line, order, cheese);

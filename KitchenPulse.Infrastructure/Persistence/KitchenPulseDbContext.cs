@@ -10,6 +10,8 @@ public class KitchenPulseDbContext : DbContext
     }
 
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
+    public DbSet<Site> Sites => Set<Site>();
+    public DbSet<StockLevel> StockLevels => Set<StockLevel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

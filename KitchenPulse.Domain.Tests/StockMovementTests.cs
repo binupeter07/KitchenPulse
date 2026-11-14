@@ -14,6 +14,18 @@ public class StockMovementTests
     }
 
     [Fact]
+    public void Create_EmptySiteId_Throws()
+    {
+        var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+        var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+
+        var exception = Assert.Throws<ArgumentException>(() => 
+            StockMovement.Sale(Guid.Empty, cheese, 3.0m, occurredAtUtc, "Sale-101"));
+
+        Assert.Equal("siteId", exception.ParamName);
+    }
+
+    [Fact]
     public void Waste_Change_IsNegative()
     {
         var waste = CreateMovement(StockMovement.Waste);
@@ -58,18 +70,20 @@ public class StockMovementTests
     {
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+        var siteId = Guid.CreateVersion7();
 
         var exception = Assert.Throws<ArgumentException>(
-            () => StockMovement.Waste(cheese, 0m, occurredAtUtc, "REF-001"));
+            () => StockMovement.Waste(siteId, cheese, 0m, occurredAtUtc, "REF-001"));
 
         Assert.Equal("quantity", exception.ParamName);
     }
 
-    private static StockMovement CreateMovement(Func<Ingredient, decimal, DateTime, string?, StockMovement> factory)
+    private static StockMovement CreateMovement(Func<Guid, Ingredient, decimal, DateTime, string?, StockMovement> factory)
     {
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+        var siteId = Guid.CreateVersion7();
 
-        return factory(cheese, 60m, occurredAtUtc, "REF-001");
+        return factory(siteId, cheese, 60m, occurredAtUtc, "REF-001");
     }
 }

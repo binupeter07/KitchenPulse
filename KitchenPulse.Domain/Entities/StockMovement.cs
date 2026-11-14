@@ -6,6 +6,7 @@ namespace KitchenPulse.Domain.Entities;
 public class StockMovement
 {
     public Guid Id { get; private set; }
+    public Guid SiteId { get; private set; }
     public Ingredient Ingredient { get; private set; }
     public StockMovementType Type { get; private set; }
     public decimal Quantity { get; private set; }
@@ -22,7 +23,7 @@ public class StockMovement
         _ => throw new InvalidOperationException("Unknown type.")
     };
 
-    private StockMovement(Ingredient ingredient, StockMovementType type, decimal quantity, DateTime occurredAtUtc, string? reference)
+    private StockMovement(Guid siteId, Ingredient ingredient, StockMovementType type, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
         ArgumentNullException.ThrowIfNull(ingredient);
         Guard.EnumDefined(type, nameof(type));
@@ -31,7 +32,13 @@ public class StockMovement
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
         }
 
+        if (siteId == Guid.Empty)
+        {
+            throw new ArgumentException("SiteId cannot be empty", nameof(siteId));
+        }
+
         Id = Guid.NewGuid();
+        SiteId = siteId;
         Ingredient = ingredient;
         Type = type;
         Quantity = quantity;
@@ -39,33 +46,33 @@ public class StockMovement
         Reference = reference?.Trim();
     }
 
-    public static StockMovement Sale(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement Sale(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
-        return new StockMovement(ingredient, StockMovementType.Sale, quantity, occurredAtUtc, reference);
+        return new StockMovement(siteId, ingredient, StockMovementType.Sale, quantity, occurredAtUtc, reference);
     }
 
-    public static StockMovement Waste(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement Waste(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
-        return new StockMovement(ingredient, StockMovementType.Waste, quantity, occurredAtUtc, reference);
+        return new StockMovement(siteId, ingredient, StockMovementType.Waste, quantity, occurredAtUtc, reference);
     }
 
-    public static StockMovement StaffMeal(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement StaffMeal(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
-        return new StockMovement(ingredient, StockMovementType.StaffMeal, quantity, occurredAtUtc, reference);
+        return new StockMovement(siteId, ingredient, StockMovementType.StaffMeal, quantity, occurredAtUtc, reference);
     }
 
-    public static StockMovement StocktakeGain(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement StocktakeGain(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
-        return new StockMovement(ingredient, StockMovementType.StocktakeGain, quantity, occurredAtUtc, reference);
+        return new StockMovement(siteId, ingredient, StockMovementType.StocktakeGain, quantity, occurredAtUtc, reference);
     }
 
-    public static StockMovement StocktakeLoss(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement StocktakeLoss(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
-        return new StockMovement(ingredient, StockMovementType.StocktakeLoss, quantity, occurredAtUtc, reference);
+        return new StockMovement(siteId, ingredient, StockMovementType.StocktakeLoss, quantity, occurredAtUtc, reference);
     }
 
-    public static StockMovement Delivery(Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
+    public static StockMovement Delivery(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
-        return new StockMovement(ingredient, StockMovementType.Delivery, quantity, occurredAtUtc, reference);
+        return new StockMovement(siteId, ingredient, StockMovementType.Delivery, quantity, occurredAtUtc, reference);
     }
 }

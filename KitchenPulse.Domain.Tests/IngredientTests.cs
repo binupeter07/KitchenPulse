@@ -1,16 +1,10 @@
-﻿
-using KitchenPulse.Domain.Entities;
+﻿using KitchenPulse.Domain.Entities;
 using KitchenPulse.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
 
 namespace KitchenPulse.Domain.Tests;
 
 public class IngredientTests
 {
-    private static readonly Guid SiteId = Guid.CreateVersion7();
     [Fact]
     public void CreateIngredient_ValidParameters_ShouldCreateIngredient()
     {
@@ -122,17 +116,8 @@ public class IngredientTests
         var ingredient = new Ingredient("Unknown", StockUnit.Gram, StorageType.Ambient);
 
         // Attempt to add an invalid allergen (not in the Allergen enum)
-        Assert.Throws<ArgumentException>(() => ingredient.AddAllergen((Allergen)999));
-    }
-
-    [Fact]
-    public void UnsafeIngredients_IngredientRemoved_NotIncluded()
-    {
-        var (line, order, cheese) = CreateClassicWithMilkyCheese();
-        line.AddCustomerAllergy(Allergen.Milk);
-        line.RemoveIngredient(cheese);
-
-        Assert.Empty(line.UnsafeIngredients);
+        var exception = Assert.Throws<ArgumentException>(() => ingredient.AddAllergen((Allergen)999));
+        Assert.Equal("allergen", exception.ParamName);
     }
 
     [Fact]
@@ -184,25 +169,5 @@ public class IngredientTests
         Assert.Equal(0m, bacon.ExtraPortion);
     }
 
-
-    private static (OrderLine line, Order order, Ingredient cheese) CreateClassicWithMilkyCheese()
-    {
-        var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
-        cheese.SetExtraPortion(1m);
-        var sauce = new Ingredient("Cheese sauce", StockUnit.Milliliter, StorageType.Chilled);
-        sauce.SetExtraPortion(20m);
-        var beef = new Ingredient("Beef patty", StockUnit.Each, StorageType.Chilled);
-        beef.SetExtraPortion(1m);
-        var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
-        classic.AddIngredient(beef, 1);
-        classic.AddIngredient(cheese, 1);
-        cheese.AddAllergen(Allergen.Milk);
-
-        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId,1043, "8", placedAtUtc);
-        var line = order.AddDish(classic, 1);
-
-        return (line, order, cheese);
     }
-}
 

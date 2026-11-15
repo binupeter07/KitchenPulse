@@ -46,9 +46,10 @@ public class KitchenPulseDbContextModelTests
 
         var ingredientEntity = model.FindEntityType(typeof(Ingredient));
 
+        Assert.NotNull(ingredientEntity);
         var primaryKey = ingredientEntity.FindPrimaryKey();
+        Assert.NotNull(primaryKey);
         var propertyName = primaryKey.Properties.Single().Name;
-
         Assert.Equal("Id", propertyName);
     }
 }

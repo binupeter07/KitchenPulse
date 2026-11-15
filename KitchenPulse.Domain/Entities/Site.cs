@@ -12,7 +12,7 @@
                 throw new ArgumentException("Site Name cannot be blank", nameof(name));
             }
 
-            Id = Guid.NewGuid();
+            Id = Guid.CreateVersion7();
             Name = name.Trim();
         }
     }

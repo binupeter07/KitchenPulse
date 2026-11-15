@@ -37,7 +37,7 @@ public class StockMovement
             throw new ArgumentException("SiteId cannot be empty", nameof(siteId));
         }
 
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
         SiteId = siteId;
         Ingredient = ingredient;
         Type = type;

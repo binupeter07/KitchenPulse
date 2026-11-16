@@ -78,6 +78,33 @@ public class StockMovementTests
         Assert.Equal("quantity", exception.ParamName);
     }
 
+    [Fact]
+    public void Create_Reference100Characters_IsAccepted()
+    {
+        var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+        var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+        var reference = new string('a', 100);
+
+        var movement = StockMovement.Sale(Guid.CreateVersion7(), cheese, 3.0m, occurredAtUtc, reference);
+
+        Assert.Equal(reference, movement.Reference);
+    }
+
+    [Theory]
+    [InlineData(101)]
+    [InlineData(500)]
+    public void Create_ReferenceOver100Characters_Throws(int length)
+    {
+        var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+        var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
+        var reference = new string('a', length);
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => StockMovement.Sale(Guid.CreateVersion7(), cheese, 3.0m, occurredAtUtc, reference));
+
+        Assert.Equal("reference", exception.ParamName);
+    }
+
     private static StockMovement CreateMovement(Func<Guid, Ingredient, decimal, DateTime, string?, StockMovement> factory)
     {
         var occurredAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);

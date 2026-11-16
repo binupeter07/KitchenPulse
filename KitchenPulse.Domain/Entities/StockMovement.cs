@@ -5,6 +5,8 @@ namespace KitchenPulse.Domain.Entities;
 
 public class StockMovement
 {
+    public const int MaxReferenceLength = 100;
+
     public Guid Id { get; private set; }
     public Guid SiteId { get; private set; }
     public Ingredient Ingredient { get; private set; }
@@ -23,6 +25,10 @@ public class StockMovement
         _ => throw new InvalidOperationException("Unknown type.")
     };
 
+    private StockMovement()
+    {
+    }
+
     private StockMovement(Guid siteId, Ingredient ingredient, StockMovementType type, decimal quantity, DateTime occurredAtUtc, string? reference)
     {
         ArgumentNullException.ThrowIfNull(ingredient);
@@ -37,13 +43,19 @@ public class StockMovement
             throw new ArgumentException("SiteId cannot be empty", nameof(siteId));
         }
 
+        var trimmedReference = reference?.Trim();
+        if (trimmedReference is { Length: > MaxReferenceLength })
+        {
+            throw new ArgumentException($"Reference cannot be longer than {MaxReferenceLength} characters.", nameof(reference));
+        }
+
         Id = Guid.CreateVersion7();
         SiteId = siteId;
         Ingredient = ingredient;
         Type = type;
         Quantity = quantity;
         OccurredAtUtc = occurredAtUtc;
-        Reference = reference?.Trim();
+        Reference = trimmedReference;
     }
 
     public static StockMovement Sale(Guid siteId, Ingredient ingredient, decimal quantity, DateTime occurredAtUtc, string? reference)

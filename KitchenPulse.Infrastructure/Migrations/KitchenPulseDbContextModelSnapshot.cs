@@ -95,6 +95,44 @@ namespace KitchenPulse.Infrastructure.Migrations
                     b.ToTable("StockLevels", (string)null);
                 });
 
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.StockMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IngredientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<short>("Type")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IngredientId");
+
+                    b.HasIndex("SiteId", "OccurredAtUtc");
+
+                    b.ToTable("StockMovements", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StockMovements_Type", "[Type] BETWEEN 1 AND 6");
+                        });
+                });
+
             modelBuilder.Entity("KitchenPulse.Domain.Entities.Ingredient", b =>
                 {
                     b.OwnsMany("KitchenPulse.Domain.Entities.IngredientAllergen", "_allergens", b1 =>
@@ -135,6 +173,23 @@ namespace KitchenPulse.Infrastructure.Migrations
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.StockMovement", b =>
+                {
+                    b.HasOne("KitchenPulse.Domain.Entities.Ingredient", "Ingredient")
+                        .WithMany()
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KitchenPulse.Domain.Entities.Site", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
                 });
 #pragma warning restore 612, 618
         }

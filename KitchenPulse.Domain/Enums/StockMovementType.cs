@@ -2,10 +2,10 @@
 
 public enum StockMovementType
 {
-    Sale,
-    Delivery,
-    Waste,
-    StaffMeal,
-    StocktakeGain,
-    StocktakeLoss
+    Sale = 1,
+    Delivery = 2,
+    Waste = 3,
+    StaffMeal = 4,
+    StocktakeGain = 5,
+    StocktakeLoss = 6
 }

@@ -38,7 +38,7 @@ public class Order
             throw new ArgumentException("SiteId cannot be empty", nameof(siteId));
         }
 
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
         SiteId = siteId;
         OrderNumber = orderNumber;
         Table = table.Trim();

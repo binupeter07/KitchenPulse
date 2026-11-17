@@ -12,7 +12,8 @@
 - Fridges: temperature monitoring, with alerts on screen (e.g. a door left open).
 - Food-safety assistant (RAG): answers questions like cooking times from documents.
 
-Built / in progress: allergens and stock (Domain), Ingredient persistence (Infrastructure).
+Built / in progress: allergens, stock and orders (Domain); persistence for
+Ingredient, Site, StockLevel and StockMovement (Infrastructure).
 Planned (do not build unless asked): fridges, RAG, login and roles.
 
 Design every decision for high data volume and high traffic.
@@ -62,5 +63,7 @@ Design every decision for high data volume and high traffic.
 - Work in small steps: one class + its tests, or one or two files, then stop and show me.
 - Never edit or delete an applied migration; always create a new one.
   Never run Update-Database or change connection strings without asking.
+- After editing a file, re-read the changed lines on disk and check they are complete before building.
+  Tell me about any line you had to repair.
 - After each change: build, run all tests, and tell me the result.
 - I'm learning: after each change, explain what you did and why, in simple words.

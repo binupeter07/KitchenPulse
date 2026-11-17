@@ -32,7 +32,7 @@ public class SiteTests
     [InlineData(null)]
         public void Constructor_NameWithBlank_ThrowError(string? name)
     {
-        var exception = Assert.Throws<ArgumentException>(() =>  new Site(name));
+        var exception = Assert.Throws<ArgumentException>(() => new Site(name!));
         Assert.Equal("name", exception.ParamName);
     }
 }

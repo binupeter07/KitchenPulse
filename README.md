@@ -2,9 +2,9 @@
 
 **A kitchen operations platform for busy restaurants: live kitchen screens, allergen safety checks and real-time stock tracking from POS orders.**
 
-Designed and built by a working Head Chef, from the problems I deal with on the line every day.
+Designed and built by a former Head Chef, from problems I dealt with on the line every day.
 
-> **Status:** In active development. The domain layer (the core business rules) is nearly complete and covered by unit tests. The API, database and kitchen screens are next. See the [roadmap](#roadmap).
+> **Status:** In active development. The domain layer (the core business rules) is complete and covered by unit tests. Database storage is done for ingredients (with allergens), sites, stock levels and stock movements. Dishes, orders and the API are next. See the [roadmap](#roadmap).
 
 ---
 
@@ -35,9 +35,11 @@ KitchenPulse connects to the restaurant's till and turns every order into clear 
   - a course is "ready" only when every kitchen item in it is done (drinks don't count)
   - mains are held until the starters have been collected
   - collecting is only allowed once a course is ready, and double taps are ignored
+- **Multi-site:** a chain of restaurants, with stock kept per site.
 - **Stock tracking:**
   - every stock change (sale, delivery, waste, staff meal, stocktake gain or loss) is recorded as a stock movement
-  - each ingredient keeps a running current stock, updated as each movement is applied
+  - each site keeps its own stock level per ingredient, updated from stock movements
+  - stock movements are append-only: they can be added but never changed or deleted
   - stock below zero is allowed but flagged, as a sign that something (usually a delivery) wasn't recorded
 
 ### Planned
@@ -58,9 +60,9 @@ KitchenPulse connects to the restaurant's till and turns every order into clear 
 |---|---|---|
 | Language and runtime | C#, .NET 10 | |
 | Architecture | Clean Architecture (Domain, Application, Infrastructure, API) | |
-| Testing | xUnit, test-driven development | Integration tests |
+| Testing | xUnit, test-driven development, integration tests | |
 | Back end | | ASP.NET Core Web API |
-| Data | | Entity Framework Core, SQL Server |
+| Data | Entity Framework Core 10, SQL Server | |
 | Front end | | Angular, Bootstrap 5 |
 | Real time and events | | SignalR, Kafka, Redis |
 | AI | | Azure OpenAI, Azure AI Search (RAG) |
@@ -94,9 +96,10 @@ A few choices that shaped the code:
 1. **Allergens come from the plate, not the menu.** "Dish allergens minus the removed ingredient's allergens" is unsafe, because another ingredient (like a sauce) may contain the same allergen. So the app rebuilds what's on the plate (recipe minus removed, plus extras) and reads the allergens of each ingredient.
 2. **The customer's allergy belongs to the order line, not the whole order.** At a table of four, only one person may have the allergy. Flagging every dish would create false alarms, and false alarms train staff to ignore warnings.
 3. **Strict allergy rule.** If a customer declares an allergy, the only options are to remove every unsafe ingredient or choose another dish. "Just a little" is never accepted.
-4. **Stock is a diary plus a running total.** Every change is recorded as a stock movement that is never edited, which gives a full history for audits and stocktake differences. Each ingredient also keeps a running total, so reading the stock is instant even after years of history.
+4. **Stock is a diary plus a running total, per site.** Stock movements are the history: every change is recorded and never edited, which gives a full history for audits and stocktake differences. `StockLevel` is the running total for each site and ingredient, so reading the stock is instant even after years of history. A rowversion concurrency token on the stock level stops two orders updating the same stock row from losing an update.
 5. **Quantities are always positive, and the movement type decides the direction.** Movements are created through named methods (`StockMovement.Sale(...)`, `StockMovement.Delivery(...)`), so a sale can never be recorded as a delivery by mistake.
 6. **The domain never trusts the screen.** Even if a button is hidden, the domain still enforces the rule, because the same rules are reached from the till, the kitchen screens and the API.
+7. **The database is a second line of defence.** Foreign keys use Restrict, so related rows can't be deleted by accident. Check constraints on the enum columns reject invalid values, site names are unique, and the DbContext refuses to modify or delete stock movements (append-only).
 
 ---
 
@@ -110,14 +113,16 @@ cd kitchenpulse
 dotnet test
 ```
 
+The Infrastructure tests need SQL Server LocalDB (Windows).
+
 Or open the solution in Visual Studio and run all tests from Test Explorer.
 
 ---
 
 ## Roadmap
 
-- [ ] **Stage 1a:** Domain: menu, orders, allergen checks, kitchen flow, stock movements (in progress: turning sales into stock movements)
-- [ ] **Stage 1b:** Database, API, POS simulator and live kitchen screens
+- [x] **Stage 1a:** Domain: menu, orders, allergen checks, kitchen flow, stock movements
+- [ ] **Stage 1b:** Database, API, POS simulator and live kitchen screens (in progress: database for ingredients, sites and stock is done; dishes, orders, API, POS simulator and kitchen screens are next)
 - [ ] **Stage 2:** Deliveries, suppliers, purchase orders, waste and weekly stocktake
 - [ ] **Stage 3:** Fridge temperature monitoring, alerts, Kafka and Redis
 - [ ] **Stage 4:** Staff, roles, rota and audit log

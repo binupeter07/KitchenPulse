@@ -27,7 +27,7 @@ public class Dish
         ValidatePrice(price);
         Guard.EnumDefined(station, nameof(station));
 
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
         Price = price;

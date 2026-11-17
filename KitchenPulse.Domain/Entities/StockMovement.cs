@@ -27,6 +27,7 @@ public class StockMovement
 
     private StockMovement()
     {
+        Ingredient = null!; // EF Core sets this when it loads the entity.
     }
 
     private StockMovement(Guid siteId, Ingredient ingredient, StockMovementType type, decimal quantity, DateTime occurredAtUtc, string? reference)

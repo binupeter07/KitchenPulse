@@ -20,7 +20,7 @@ public class Ingredient
         Guard.EnumDefined(unit, nameof(unit));
         Guard.EnumDefined(storageType, nameof(storageType));
 
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
         Name = name.Trim();
         Unit = unit;
         StorageType = storageType;

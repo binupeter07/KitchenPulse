@@ -22,6 +22,42 @@ namespace KitchenPulse.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.Dish", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<short>("Station")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Dishes", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Dishes_Price", "[Price] > 0");
+
+                            t.HasCheckConstraint("CK_Dishes_Station", "[Station] BETWEEN 1 AND 3");
+                        });
+                });
+
             modelBuilder.Entity("KitchenPulse.Domain.Entities.Ingredient", b =>
                 {
                     b.Property<Guid>("Id")
@@ -131,6 +167,44 @@ namespace KitchenPulse.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_StockMovements_Type", "[Type] BETWEEN 1 AND 6");
                         });
+                });
+
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.Dish", b =>
+                {
+                    b.OwnsMany("KitchenPulse.Domain.Entities.RecipeLine", "_recipeLines", b1 =>
+                        {
+                            b1.Property<Guid>("DishId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("IngredientId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Quantity")
+                                .HasPrecision(18, 3)
+                                .HasColumnType("decimal(18,3)");
+
+                            b1.HasKey("DishId", "IngredientId");
+
+                            b1.HasIndex("IngredientId");
+
+                            b1.ToTable("RecipeLines", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_RecipeLines_Quantity", "[Quantity] > 0");
+                                });
+
+                            b1.WithOwner()
+                                .HasForeignKey("DishId");
+
+                            b1.HasOne("KitchenPulse.Domain.Entities.Ingredient", "Ingredient")
+                                .WithMany()
+                                .HasForeignKey("IngredientId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.Navigation("Ingredient");
+                        });
+
+                    b.Navigation("_recipeLines");
                 });
 
             modelBuilder.Entity("KitchenPulse.Domain.Entities.Ingredient", b =>

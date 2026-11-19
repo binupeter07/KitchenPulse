@@ -5,6 +5,12 @@ public class RecipeLine
     public Ingredient Ingredient { get; private set; }
     public decimal Quantity { get; private set; }
 
+    // Only for EF Core.
+    private RecipeLine()
+    {
+        Ingredient = null!; // EF Core sets this when it loads the entity.
+    }
+
     public RecipeLine(Ingredient ingredient, decimal quantity)
     {
         if (ingredient is null)

@@ -2,7 +2,7 @@
 
 public enum Station
 {
-    Grill,
-    Fryer,
-    Front
+    Grill = 1,
+    Fryer = 2,
+    Front = 3
 }

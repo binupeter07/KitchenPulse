@@ -1,4 +1,4 @@
-﻿using KitchenPulse.Domain.Common;
+using KitchenPulse.Domain.Common;
 using KitchenPulse.Domain.Enums;
 using System.Collections.ObjectModel;
 
@@ -13,7 +13,9 @@ public class Order
     public Guid Id { get; private set; }
     public Guid SiteId { get; private set;  }
     public int OrderNumber { get; private set; }
-    public string Table { get; private set; }
+    public OrderType OrderType { get; private set; }
+    public DateOnly BusinessDate { get; private set; }
+    public string? Table { get; private set; }
     public DateTime PlacedAtUtc { get; private set; }
     public bool IsCollected { get; private set; }
 
@@ -21,13 +23,25 @@ public class Order
     public IReadOnlyCollection<OrderLine> Lines => _lines;
     public IReadOnlyCollection<Course> CollectedCourse => _collectedCourses;
     public bool IsMainsOnHold => _lines.Any(l => l.Course == Course.Starter) && !IsCourseCollected(Course.Starter);
-    public Order(Guid siteId, int orderNumber, string table, DateTime placedAtUtc)
+    public Order(Guid siteId, int orderNumber, string? table, DateTime placedAtUtc, OrderType orderType, DateOnly businessDate)
     {
+        Guard.EnumDefined(orderType, nameof(orderType));
 
-        if (string.IsNullOrWhiteSpace(table))
+        if (businessDate == default)
         {
-            throw new ArgumentException("Table cannot be null or blank.", nameof(table));
+            throw new ArgumentException("Business date must be set.", nameof(businessDate));
         }
+
+        if (orderType == OrderType.EatIn && string.IsNullOrWhiteSpace(table))
+        {
+            throw new ArgumentException("Table cannot be null or blank for an eat-in order.", nameof(table));
+        }
+
+        if (orderType == OrderType.Takeaway && !string.IsNullOrWhiteSpace(table))
+        {
+            throw new ArgumentException("A takeaway order cannot have a table.", nameof(table));
+        }
+
         if (orderNumber <= 0)
         {
             throw new ArgumentException("Order number must be greater than zero.", nameof(orderNumber));
@@ -41,7 +55,9 @@ public class Order
         Id = Guid.CreateVersion7();
         SiteId = siteId;
         OrderNumber = orderNumber;
-        Table = table.Trim();
+        OrderType = orderType;
+        BusinessDate = businessDate;
+        Table = orderType == OrderType.EatIn ? table!.Trim() : null;
         PlacedAtUtc = placedAtUtc;
     }
 

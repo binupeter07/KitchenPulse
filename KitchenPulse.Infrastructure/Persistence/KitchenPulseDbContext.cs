@@ -11,6 +11,7 @@ public class KitchenPulseDbContext : DbContext
 
     public DbSet<Dish> Dishes => Set<Dish>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
+    public DbSet<Order> Orders => Set<Order>();
     public DbSet<Site> Sites => Set<Site>();
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();

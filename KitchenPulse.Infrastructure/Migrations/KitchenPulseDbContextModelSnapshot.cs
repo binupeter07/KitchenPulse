@@ -88,6 +88,54 @@ namespace KitchenPulse.Infrastructure.Migrations
                     b.ToTable("Ingredients");
                 });
 
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("BusinessDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsCollected")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OrderNumber")
+                        .HasColumnType("int");
+
+                    b.Property<short>("OrderType")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("PlacedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Table")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.PrimitiveCollection<string>("_collectedCourses")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("CollectedCourses");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteId", "PlacedAtUtc");
+
+                    b.HasIndex("SiteId", "BusinessDate", "OrderType", "OrderNumber")
+                        .IsUnique();
+
+                    b.ToTable("Orders", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Orders_OrderNumber", "[OrderNumber] > 0");
+
+                            t.HasCheckConstraint("CK_Orders_OrderType", "[OrderType] BETWEEN 1 AND 2");
+                        });
+                });
+
             modelBuilder.Entity("KitchenPulse.Domain.Entities.Site", b =>
                 {
                     b.Property<Guid>("Id")
@@ -232,6 +280,66 @@ namespace KitchenPulse.Infrastructure.Migrations
                         });
 
                     b.Navigation("_allergens");
+                });
+
+            modelBuilder.Entity("KitchenPulse.Domain.Entities.Order", b =>
+                {
+                    b.HasOne("KitchenPulse.Domain.Entities.Site", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("KitchenPulse.Domain.Entities.OrderLine", "_lines", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<short>("Course")
+                                .HasColumnType("smallint");
+
+                            b1.Property<Guid>("DishId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<bool>("IsDone")
+                                .HasColumnType("bit");
+
+                            b1.Property<bool>("IsSent")
+                                .HasColumnType("bit");
+
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("DishId");
+
+                            b1.HasIndex("OrderId");
+
+                            b1.ToTable("OrderLines", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_OrderLines_Course", "[Course] BETWEEN 1 AND 2");
+
+                                    t.HasCheckConstraint("CK_OrderLines_Quantity", "[Quantity] > 0");
+                                });
+
+                            b1.HasOne("KitchenPulse.Domain.Entities.Dish", "Dish")
+                                .WithMany()
+                                .HasForeignKey("DishId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+
+                            b1.Navigation("Dish");
+                        });
+
+                    b.Navigation("_lines");
                 });
 
             modelBuilder.Entity("KitchenPulse.Domain.Entities.StockLevel", b =>

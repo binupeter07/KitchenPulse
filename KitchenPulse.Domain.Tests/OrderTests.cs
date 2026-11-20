@@ -1,4 +1,4 @@
-﻿using KitchenPulse.Domain.Entities;
+using KitchenPulse.Domain.Entities;
 using KitchenPulse.Domain.Enums;
 
 namespace KitchenPulse.Domain.Tests;
@@ -6,6 +6,7 @@ namespace KitchenPulse.Domain.Tests;
 public class OrderTests
 {
     private static readonly Guid SiteId = Guid.CreateVersion7();
+    private static readonly DateOnly BusinessDate = new(2026, 10, 20);
 
     [Fact]
     public void Constructor_ValidValues_SetsProperties()
@@ -14,7 +15,7 @@ public class OrderTests
         var table = "8";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var order = new Order(SiteId, orderNumber, table, placedAtUtc);
+        var order = new Order(SiteId, orderNumber, table, placedAtUtc, OrderType.EatIn, BusinessDate);
 
         Assert.NotEqual(Guid.Empty, order.Id);
         Assert.Equal(1043, order.OrderNumber);
@@ -30,7 +31,7 @@ public class OrderTests
         var table = "8";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, orderNumber, table, placedAtUtc));
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, orderNumber, table, placedAtUtc, OrderType.EatIn, BusinessDate));
 
         Assert.Equal("orderNumber", exception.ParamName);
     }
@@ -42,7 +43,7 @@ public class OrderTests
         var table = "";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, orderNumber, table, placedAtUtc));
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, orderNumber, table, placedAtUtc, OrderType.EatIn, BusinessDate));
 
         Assert.Equal("table", exception.ParamName);
     }
@@ -54,7 +55,7 @@ public class OrderTests
         var table = " 8    ";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var order = new Order(SiteId, orderNumber, table, placedAtUtc);
+        var order = new Order(SiteId, orderNumber, table, placedAtUtc, OrderType.EatIn, BusinessDate);
 
         Assert.NotEqual(Guid.Empty, order.Id);
         Assert.Equal(142, order.OrderNumber);
@@ -68,16 +69,89 @@ public class OrderTests
         var table = "8";
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
 
-        var exception = Assert.Throws<ArgumentException>(() => new Order(Guid.Empty, orderNumber, table, placedAtUtc));
+        var exception = Assert.Throws<ArgumentException>(() => new Order(Guid.Empty, orderNumber, table, placedAtUtc, OrderType.EatIn, BusinessDate));
 
         Assert.Equal("siteId", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(99)]
+    public void Constructor_UndefinedOrderType_Throws(int orderType)
+    {
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, 1, "8", placedAtUtc, (OrderType)orderType, BusinessDate));
+
+        Assert.Equal("orderType", exception.ParamName);
+    }
+
+    [Fact]
+    public void Constructor_UnsetBusinessDate_Throws()
+    {
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, 1, "8", placedAtUtc, OrderType.EatIn, default));
+
+        Assert.Equal("businessDate", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void Constructor_EatInWithNoTable_Throws(string? table)
+    {
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, 1, table, placedAtUtc, OrderType.EatIn, BusinessDate));
+
+        Assert.Equal("table", exception.ParamName);
+    }
+
+    [Fact]
+    public void Constructor_TakeawayWithTable_Throws()
+    {
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentException>(() => new Order(SiteId, 1, "8", placedAtUtc, OrderType.Takeaway, BusinessDate));
+
+        Assert.Equal("table", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void Constructor_TakeawayWithNoTable_HasNoTable(string? table)
+    {
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+
+        var order = new Order(SiteId, 1, table, placedAtUtc, OrderType.Takeaway, BusinessDate);
+
+        Assert.Null(order.Table);
+    }
+
+    [Fact]
+    public void AddDish_NewLines_HaveDifferentNonEmptyIds()
+    {
+        var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
+        var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
+
+        var first = order.AddDish(classic, 1);
+        var second = order.AddDish(classic, 1);
+
+        Assert.NotEqual(Guid.Empty, first.Id);
+        Assert.NotEqual(Guid.Empty, second.Id);
+        Assert.NotEqual(first.Id, second.Id);
     }
 
     [Fact]
     public void AddDish_NewDish_AddsLine()
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
 
         order.AddDish(classic, 2);
@@ -91,7 +165,7 @@ public class OrderTests
     public void AddDish_SameDishTwice_AddsTwoLines()
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
 
         order.AddDish(classic, 2);
@@ -104,7 +178,7 @@ public class OrderTests
     public void AddDish_ZeroQuantity_ThrowsArgumentException()
     {
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
 
         var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 0));
@@ -117,7 +191,7 @@ public class OrderTests
     {
         var cheese = new Ingredient("Cheese slice", StockUnit.Each, StorageType.Chilled);
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(cheese, 1);
         var line = order.AddDish(classic, 1);
@@ -135,7 +209,7 @@ public class OrderTests
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(cheese, 1);
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
 
         // Act
         var line = order.AddDish(classic, 1, [cheese]);
@@ -152,7 +226,7 @@ public class OrderTests
         var classic = new Dish("The Classic", "Classic beef burger", 11.50m, Station.Grill);
         classic.AddIngredient(beef, 1);
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
 
         var exception = Assert.Throws<ArgumentException>(() => order.AddDish(classic, 1, [cheese]));
 
@@ -865,7 +939,7 @@ public class OrderTests
         classic.AddIngredient(sauce, 30m);
 
         var placedAtUtc = new DateTime(2026, 10, 20, 18, 42, 0, DateTimeKind.Utc);
-        var order = new Order(SiteId, 1043, "8", placedAtUtc);
+        var order = new Order(SiteId, 1043, "8", placedAtUtc, OrderType.EatIn, BusinessDate);
         var line = order.AddDish(classic, 1);
 
         return (line, order, cheese, sauce);

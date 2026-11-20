@@ -2,6 +2,6 @@
 
 public enum Course
 {
-    Starter,
-    Main
+    Starter = 1,
+    Main = 2
 }

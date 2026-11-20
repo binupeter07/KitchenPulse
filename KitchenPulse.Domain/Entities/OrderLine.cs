@@ -10,6 +10,7 @@ public class OrderLine
     private readonly List<Allergen> _customerAllergies = new();
 
 
+    public Guid Id { get; private set; }
     public Dish Dish { get; private set; }
     public int Quantity { get; private set; }
     public Course Course { get; private set; }
@@ -37,6 +38,11 @@ public class OrderLine
         .Concat(_extras);
 
 
+    private OrderLine()
+    {
+        Dish = null!;
+    }
+
     public OrderLine(Dish dish, int quantity, Course course = Course.Main)
     {
         ArgumentNullException.ThrowIfNull(dish);
@@ -47,6 +53,7 @@ public class OrderLine
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
         }
 
+        Id = Guid.CreateVersion7();
         Dish = dish;
         Quantity = quantity;
         Course = course;
